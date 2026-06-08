@@ -23,10 +23,10 @@ Herramienta interactiva para generar gráficos de métricas (NPS, CES, ISN, funn
 ## 💻 Desarrollo
 
 ```bash
-npm install
-npm run dev        # servidor de desarrollo (http://localhost:5183/charts-gen/)
-npm run build      # build de producción a /dist
-npm run preview    # previsualiza el build
+pnpm install
+pnpm dev        # servidor de desarrollo (http://localhost:5183/charts-gen/)
+pnpm build      # build de producción a /dist
+pnpm preview    # previsualiza el build
 ```
 
 ## 📦 Estructura
