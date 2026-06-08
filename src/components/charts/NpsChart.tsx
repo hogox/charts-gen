@@ -6,11 +6,16 @@ import { ChartTitle } from './EmptyState'
 import { LineChartBase } from './LineChartBase'
 
 function KpiTile({ label, value, diff }: { label: string; value: string; diff?: string | null }) {
+  const diffColor = diff?.startsWith('Excede')
+    ? 'text-[#0F7B3F]'
+    : diff?.startsWith('Faltan')
+      ? 'text-[#EB5454]'
+      : 'text-[#060B25]'
   return (
     <div className="rounded-[7px] border border-[#D6DFF0] bg-[#EDF1F9] px-3 py-2.5">
       <div className="mb-0.5 text-xs text-[#6B7280]">{label}</div>
       <div className="text-[22px] font-semibold leading-none tracking-[-0.02em] text-[#060B25]">{value}</div>
-      {diff ? <div className="mt-0.5 text-xs font-semibold text-[#060B25]">{diff}</div> : null}
+      {diff ? <div className={`mt-0.5 text-xs font-semibold ${diffColor}`}>{diff}</div> : null}
     </div>
   )
 }
