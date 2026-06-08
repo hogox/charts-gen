@@ -98,14 +98,13 @@ export const useChartStore = create<ChartStore>()(
       version: 2,
       // v1 → v2: la "caja verde" del ISN pasó a ser la línea de meta (showBadge → showMeta).
       migrate: (persisted, version) => {
-        const state = persisted as Partial<ChartStore> & {
-          isnConfig?: { showBadge?: boolean; showMeta?: boolean }
+        const isn = (persisted as { isnConfig?: { showBadge?: boolean; showMeta?: boolean } })
+          ?.isnConfig
+        if (version < 2 && isn && !('showMeta' in isn)) {
+          isn.showMeta = isn.showBadge ?? true
+          delete isn.showBadge
         }
-        if (version < 2 && state?.isnConfig && !('showMeta' in state.isnConfig)) {
-          state.isnConfig.showMeta = state.isnConfig.showBadge ?? true
-          delete state.isnConfig.showBadge
-        }
-        return state
+        return persisted as ChartStore
       },
       // Rellena claves faltantes con defaults (compatibilidad hacia adelante).
       merge: (persisted, current) => ({
