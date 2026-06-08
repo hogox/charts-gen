@@ -77,7 +77,7 @@ export interface CesConfig {
 export interface IsnConfig {
   meta: number
   metaLbl: string
-  showBadge: boolean
+  showMeta: boolean
 }
 
 export interface FunnelConfig {

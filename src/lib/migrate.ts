@@ -70,7 +70,7 @@ export function importLegacy(): ChartData | null {
       isnConfig: {
         meta: num(inp['isn-mval'], d.isnConfig.meta),
         metaLbl: str(inp['isn-mlbl'], d.isnConfig.metaLbl),
-        showBadge: inp['isn-show-badge'] === undefined ? d.isnConfig.showBadge : !!inp['isn-show-badge'],
+        showMeta: inp['isn-show-badge'] === undefined ? d.isnConfig.showMeta : !!inp['isn-show-badge'],
       },
       funnelConfig: {
         convLbl: str(inp['fclbl'], d.funnelConfig.convLbl),

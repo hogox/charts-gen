@@ -97,7 +97,7 @@ export function getDefaultData(): ChartData {
     isnConfig: {
       meta: 58,
       metaLbl: 'Meta ISN 2026',
-      showBadge: true,
+      showMeta: true,
     },
     funnelConfig: {
       convLbl: 'Conversión total',

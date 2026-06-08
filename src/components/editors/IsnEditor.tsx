@@ -55,10 +55,10 @@ export function IsnEditor() {
 
       <label className="mt-2 flex cursor-pointer items-center gap-2 text-[11px] font-medium text-[#41464E]">
         <Checkbox
-          checked={config.showBadge}
-          onCheckedChange={(c) => updateConfig('isnConfig', { showBadge: c === true })}
+          checked={config.showMeta}
+          onCheckedChange={(c) => updateConfig('isnConfig', { showMeta: c === true })}
         />
-        Mostrar caja verde
+        Mostrar línea de meta
       </label>
     </fieldset>
   )
