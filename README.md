@@ -1,68 +1,53 @@
 # Generador de Gráficos
 
-Herramienta interactiva para generar gráficos de métricas (NPS, CES, ISN, funnels, barras y composición).
+Herramienta interactiva para generar gráficos de métricas (NPS, CES, ISN, funnels, barras y composición), reescrita en **React + Vite + TypeScript** usando **shadcn/ui** y **Recharts**.
+
+🔗 **En vivo:** https://hogox.github.io/charts-gen/
 
 ## 🚀 Características
 
-- **Tipos de gráficos**: NPS línea, CES, ISN, Línea simple, Funnel, Composición, Barras, Avance
-- **Edición en tiempo real**: Actualiza los gráficos mientras escribes
-- **Persistencia local**: Los datos se guardan en tu navegador (localStorage)
-- **Descarga**: Exporta gráficos como PNG
-- **Sin dependencias**: Funciona como archivo HTML estático
+- **8 tipos de gráficos**: NPS línea, CES, ISN, Línea simple, Funnel, Composición, Barras, Avance
+- **Edición en tiempo real**: los gráficos se actualizan mientras escribes
+- **Persistencia local**: los datos se guardan en tu navegador (localStorage) — nunca se envían a un servidor
+- **Descarga PNG**: exporta cualquier gráfico como imagen
+- **Accesible**: navegación por teclado y etiquetas ARIA
 
-## 📋 Tipos de gráficos soportados
+## 🛠️ Stack
 
-| Tipo | Descripción |
-|------|-------------|
-| **NPS línea** | Evolución del NPS con tarjetas KPI y distribución |
-| **CES** | Customer Effort Score con línea de evolución |
-| **ISN** | Index de Satisfacción Neta |
-| **Línea simple** | Gráfico de línea con meta configurable |
-| **Funnel** | Embudo de conversión con pasos ajustables |
-| **Composición** | Gráfico apilado de segmentos |
-| **Barras** | Barras horizontales porcentuales |
-| **Avance** | Barra de progreso apilada |
+- [Vite](https://vite.dev/) + [React](https://react.dev/) + TypeScript
+- [Tailwind CSS](https://tailwindcss.com/) v4
+- [shadcn/ui](https://ui.shadcn.com/) — componentes y `chart` (sobre [Recharts](https://recharts.org/))
+- [Zustand](https://zustand-demo.pmnd.rs/) con `persist` para el estado
+- [html-to-image](https://github.com/bubkoo/html-to-image) para la exportación PNG
 
-## 🔧 Cómo usar
+## 💻 Desarrollo
 
-### Opción 1: Archivo local
-Descarga `generador-graficos-v1.html` y abre en tu navegador:
 ```bash
-open generador-graficos-v1.html
+npm install
+npm run dev        # servidor de desarrollo (http://localhost:5183/charts-gen/)
+npm run build      # build de producción a /dist
+npm run preview    # previsualiza el build
 ```
 
-### Opción 2: Hospedaje web
-Hospeda el archivo en cualquier servidor HTTP (GitHub Pages, Vercel, Netlify, etc.)
+## 📦 Estructura
 
-## 💾 Persistencia de datos
+```
+src/
+  components/
+    charts/     # gráficos (Recharts + Tailwind)
+    editors/    # editores del panel lateral
+    layout/     # header, sidebar, panel de vista previa
+    ui/         # componentes shadcn/ui
+  store/        # estado Zustand (persistido en localStorage)
+  lib/          # helpers (formato es-CL, funnel, defaults, colores)
+  types/        # modelos de datos
+legacy/         # versión original de archivo único (HTML + Chart.js)
+```
 
-- Los datos se guardan automáticamente en `localStorage` del navegador
-- Usa el botón "↺ Restablecer ejemplos" para volver a los datos de muestra
-- Los datos **no** se envían a ningún servidor
+## 🚢 Despliegue
 
-## 🎨 Personalización
-
-Todos los datos y títulos son editables directamente en la interfaz:
-
-1. Selecciona el tipo de gráfico
-2. Edita el título y las tarjetas KPI
-3. Agrega/modifica puntos de datos
-4. Actualiza el gráfico
-5. Descarga como PNG
-
-## 📦 Detalles técnicos
-
-- **Framework**: Chart.js 4.4.1
-- **Tamaño**: Archivo único (~80 KB)
-- **Navegadores**: Chrome, Firefox, Safari, Edge (todos los modernos)
-- **Accesibilidad**: WCAG 2.1 Level AA
-
-## 📝 Cambios v1.4
-
-- Versión despersonalizada sin logos ni datos reales
-- Datos de ejemplo genéricos
-- Datos viven solo en el navegador del usuario
-- Apta para hospedaje público
+Automático vía GitHub Actions a GitHub Pages en cada push a `main`
+(ver [.github/workflows/deploy.yml](.github/workflows/deploy.yml)).
 
 ## 📄 Licencia
 

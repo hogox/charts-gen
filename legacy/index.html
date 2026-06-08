@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<!--
+  Generador de gráficos · v1.4
+  Cambios v1.4:
+   - Versión despersonalizada: sin logos ni datos reales (apta para hospedaje público)
+   - Todos los datos de ejemplo son genéricos; lo que tipea el usuario vive solo en su navegador
+  Cambios v1.3:
+   - Cada tab conserva sus datos al cambiar de tipo
+   - Línea de meta activable/desactivable en NPS y Línea simple
+   - Persistencia automática en el navegador (localStorage) + botón "Restablecer ejemplos"
+   - Eliminado el gráfico de Dona (código muerto) y variables sin uso
+  Herramienta estática de un solo archivo. No requiere build. Hospedar como index.html.
+  Nota: la persistencia guarda datos SOLO en el navegador local; nunca se envían a ningún servidor.
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de gráficos</title>
+<meta name="description" content="Herramienta para generar gráficos de métricas (NPS, CES, ISN, funnels, barras y composición).">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F4F6FB;--surface:#FFFFFF;--surface2:#EEEFF2;--border:#DCDDE3;
+  --text:#060B25;--text2:#41464E;--text3:#6B7280;--accent:#4C1D95;
+  --accent2:#6D28D9;--accent2-soft:rgba(109,40,217,.08);--green:#0F7B3F;
+  --green-bg:#E8F5ED;--green-border:#A8D5B8;--amber:#9A4E00;
+  --amber-bg:#FFF0E0;--red:#D93636;--red-bg:#FEF0F0;--radius:12px;
+  --radius-sm:8px;--shadow:0 2px 12px rgba(0,32,100,0.08);
+  --shadow-lg:0 8px 32px rgba(0,32,100,0.12);--sidebar-w:420px;
+  --focus-ring:0 0 0 2px var(--accent2),0 0 0 4px rgba(109,40,217,.2);
+  --transition:150ms ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;}
+:focus-visible{outline:none;box-shadow:var(--focus-ring);border-radius:4px;}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:none;box-shadow:var(--focus-ring);}
+.skip-link{position:absolute;top:-100%;left:16px;z-index:1000;padding:10px 20px;background:var(--accent);color:white;font-size:13px;font-weight:500;border-radius:0 0 8px 8px;text-decoration:none;transition:top var(--transition);}
+.skip-link:focus{top:0;}
+.app-header{background:#4C1D95;padding:14px 28px;display:flex;align-items:center;gap:12px;}
+.app-header h1{font-size:14px;font-weight:500;color:white;line-height:1.3;}
+.header-sep{width:1px;height:20px;background:rgba(255,255,255,.2);}
+.layout{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:calc(100vh - 53px);}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:20px;}
+.section-group{display:flex;flex-direction:column;gap:10px;}
+.slbl{font-size:14px;font-weight:600;color:#060B25;margin-bottom:2px;}
+.tab-group{display:flex;flex-wrap:wrap;gap:3px;background:var(--surface2);border-radius:var(--radius-sm);padding:3px;}
+.tab-btn{padding:7px 10px;border:none;background:transparent;border-radius:6px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all var(--transition);white-space:nowrap;position:relative;}
+.tab-btn:hover{background:rgba(109,40,217,.05);color:var(--accent2);}
+.tab-btn[aria-selected="true"]{background:var(--surface);color:var(--accent2);box-shadow:0 1px 4px rgba(0,0,0,.08);font-weight:600;}
+.tab-btn:focus-visible{z-index:1;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg label{font-size:11px;font-weight:500;color:var(--text2);}
+.fg input,.fg select{padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:'Poppins',sans-serif;font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color var(--transition),box-shadow var(--transition);}
+.fg input:hover,.fg select:hover{border-color:#C0BCC9;}
+.fg input:focus-visible,.fg select:focus-visible{border-color:var(--accent2);}
+.fg input[type="color"],.list-row-input[type="color"]{padding:2px 4px;height:36px;cursor:pointer;border-radius:7px;}
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mc{background:var(--surface2);border-radius:var(--radius-sm);padding:10px 12px;border:1px solid var(--border);display:flex;flex-direction:column;gap:4px;}
+.mc-lbl{font-size:10px;font-weight:500;color:var(--text3);border:none;background:transparent;font-family:'Poppins',sans-serif;outline:none;width:100%;padding:2px 0;transition:color var(--transition);}
+.mc-lbl:focus-visible{color:var(--accent2);box-shadow:none;border-bottom:1px solid var(--accent2);}
+.mc-val{width:100%;border:1px solid var(--border);background:#fff;border-radius:var(--radius-sm);font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;color:var(--text);outline:none;padding:6px 8px;transition:border-color var(--transition);}
+.mc-val:hover{border-color:#C0BCC9;}.mc-val:focus-visible{border-color:var(--accent2);}.mc-val.amb{color:var(--amber);}
+.mc-sub{font-size:10px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:4px;}
+.mc-sub-val{width:52px;font-size:10px;font-weight:600;padding:3px 6px;border:1px solid var(--border);background:#fff;border-radius:6px;font-family:'Poppins',sans-serif;outline:none;transition:border-color var(--transition);}
+.mc-sub-val:hover{border-color:#C0BCC9;}.mc-sub-val:focus-visible{border-color:var(--accent2);}.mc-sub-val.amb{color:var(--amber);}
+.prow{display:grid;grid-template-columns:1fr 80px 80px 32px;gap:8px;align-items:center;margin-bottom:8px;}
+.prow-input{padding:9px 12px;border:1px solid var(--border);border-radius:6px;font-family:'Poppins',sans-serif;font-size:12px;outline:none;background:var(--surface);color:var(--text);transition:border-color var(--transition);}
+.prow-input:hover{border-color:#C0BCC9;}.prow-input:focus-visible{border-color:var(--accent2);}
+.col-hdr{font-size:10px;color:var(--text3);font-weight:500;text-align:center;}
+.list-row{display:grid;gap:8px;align-items:center;margin-bottom:6px;}
+.list-row-input{padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-family:'Poppins',sans-serif;font-size:11px;outline:none;background:var(--surface);color:var(--text);transition:border-color var(--transition);width:100%;}
+.list-row-input:hover{border-color:#C0BCC9;}.list-row-input:focus-visible{border-color:var(--accent2);}
+.dist-row{display:grid;grid-template-columns:1fr 70px 110px;gap:10px;align-items:center;}
+.dist-lbl{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dist-row input{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:'Poppins',sans-serif;font-size:12px;outline:none;background:var(--surface);color:var(--text);transition:border-color var(--transition);}
+.dist-row input:hover{border-color:#C0BCC9;}.dist-row input:focus-visible{border-color:var(--accent2);}
+.btn-add{display:flex;align-items:center;gap:5px;padding:8px 12px;border:1px dashed var(--border);background:transparent;border-radius:7px;font-family:'Poppins',sans-serif;font-size:11px;color:var(--text2);cursor:pointer;transition:all var(--transition);width:100%;margin-top:5px;}
+.btn-add:hover{border-color:var(--accent2);color:var(--accent2);background:var(--accent2-soft);}
+.btn-icon{width:32px;height:32px;border:1px solid var(--border);background:var(--surface);border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text2);transition:all var(--transition);line-height:1;flex-shrink:0;}
+.btn-icon:hover{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.btn-primary{flex:1;padding:11px 16px;background:var(--accent2);color:white;border:none;border-radius:50px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all var(--transition);display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-primary:hover{background:#5B21B6;}.btn-primary:active{transform:scale(.98);}
+.btn-secondary{flex:1;padding:10px 16px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:50px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all var(--transition);display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-secondary:hover{border-color:var(--accent2);color:var(--accent2);background:var(--accent2-soft);}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:#060B25;color:white;font-family:'Poppins',sans-serif;font-size:12px;font-weight:500;padding:10px 20px;border-radius:50px;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:999;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.preview-area{background:var(--bg);padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;overflow-y:auto;}
+#cw{background:white;border-radius:var(--radius);box-shadow:var(--shadow);width:100%;max-width:560px;min-height:380px;overflow:hidden;display:flex;flex-direction:column;}
+.ci{padding:22px 26px 20px;font-family:'Poppins',sans-serif;flex:1;}
+.btn-bar{display:flex;gap:10px;padding:16px 26px 22px;border-top:1px solid #EDF1F9;}
+.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:18px;}
+.kc{background:#EDF1F9;border-radius:7px;padding:10px 12px;border:1px solid #D6DFF0;}
+.kc .kl{font-size:12px;color:#6B7280;margin-bottom:2px;}
+.kc .kv{font-size:22px;font-weight:600;color:#060B25;letter-spacing:-.02em;}
+.kc .kd{font-size:12px;font-weight:600;margin-top:1px;}
+.kd.amb{color:var(--amber);}.kd.grn{color:var(--green);}.kd.red{color:var(--red);}
+.cc{position:relative;height:260px;margin-bottom:18px;}
+.dst{font-size:14px;font-weight:600;color:#060B25;margin-bottom:8px;}
+.dbw{display:flex;border-radius:7px;overflow:hidden;height:40px;margin-bottom:8px;}
+.dseg{display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:white;min-width:24px;}
+.dleg{display:flex;gap:12px;flex-wrap:wrap;}
+.dli{display:flex;align-items:center;gap:5px;font-size:12px;color:#41464E;}
+.empty{text-align:center;padding:50px 20px;color:var(--text3);}
+.empty .ei{font-size:32px;margin-bottom:8px;}.empty p{font-size:12px;}
+.cbar{display:flex;border-radius:7px;overflow:hidden;height:46px;margin-bottom:9px;}
+.cseg{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 9px;min-width:36px;}
+.cseg .cn{font-size:12px;font-weight:700;color:white;}.cseg .cp{font-size:9px;color:rgba(255,255,255,.75);}
+.bci{margin-bottom:13px;}.bcl{font-size:12px;font-weight:500;color:#060B25;margin-bottom:4px;}
+.bct{background:#EDF1F9;border-radius:5px;height:34px;overflow:hidden;}
+.bcf{height:100%;border-radius:5px;display:flex;align-items:center;padding-left:10px;transition:width .3s ease;}
+.bcv{font-size:12px;font-weight:600;color:white;}
+.fi{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.fl{font-size:11px;color:#41464E;width:100px;flex-shrink:0;text-align:right;}
+.ft{flex:1;background:#EDF1F9;border-radius:5px;height:34px;overflow:hidden;}
+.ff{height:100%;background:#0063FF;border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:9px;transition:width .3s ease;}
+.fb{font-size:10px;font-weight:600;color:white;white-space:nowrap;}
+.ffooter{display:flex;justify-content:space-between;align-items:center;margin-top:13px;padding-top:13px;border-top:1px solid #EDF1F9;}
+.fcl{font-size:12px;color:#41464E;font-weight:500;}.fcv{font-size:17px;font-weight:700;color:var(--green);}
+.av-wrap{padding:16px 0 8px;}.av-row{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+.av-item-lbl{font-size:12px;font-weight:500;color:#41464E;width:110px;flex-shrink:0;text-align:right;}
+.av-bar-col{flex:1;display:flex;flex-direction:column;gap:0;}
+.av-stacked{display:flex;border-radius:6px;overflow:hidden;height:28px;}
+.av-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:white;min-width:0;transition:width .3s ease;}
+.av-axis{display:flex;justify-content:space-between;margin-top:5px;}.av-axis span{font-size:9px;color:#6B7280;}
+.av-legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin:10px 0 6px;}
+.av-summary{text-align:center;font-size:15px;font-weight:700;color:#41464E;margin-top:2px;}
+.chart-title-display{font-size:22px;font-weight:700;color:#060B25;margin-bottom:14px;}
+.keyboard-hint{display:none;font-size:9px;color:var(--text3);margin-top:4px;padding:4px 8px;background:var(--surface2);border-radius:4px;}
+.tab-group:focus-within + .keyboard-hint{display:block;}
+.reset-link{align-self:flex-start;margin-top:2px;padding:4px 6px;border:none;background:transparent;font-family:'Poppins',sans-serif;font-size:10px;color:var(--text3);cursor:pointer;border-radius:4px;transition:color var(--transition);}
+.reset-link:hover{color:var(--accent2);background:var(--accent2-soft);}
+@media(max-width:900px){.layout{grid-template-columns:1fr;}.sidebar{border-right:none;border-bottom:1px solid var(--border);max-height:50vh;}.krow{grid-template-columns:repeat(2,1fr);}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important;}}
+@media(prefers-contrast:high){:root{--border:#8891A4;--text3:#41464E;}.tab-btn[aria-selected="true"]{outline:2px solid var(--accent2);}}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+<header class="app-header" role="banner">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="3" y="12" width="4" height="8" rx="1" fill="white"/>
+    <rect x="10" y="7" width="4" height="13" rx="1" fill="white"/>
+    <rect x="17" y="3" width="4" height="17" rx="1" fill="white"/>
+  </svg>
+  <div class="header-sep" aria-hidden="true"></div>
+  <h1>Generador de gráficos</h1>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" aria-label="Configuración del gráfico">
+
+    <div class="section-group">
+      <div class="slbl" id="tipo-label">Tipo de gráfico</div>
+      <div class="tab-group" role="tablist" aria-labelledby="tipo-label">
+        <button class="tab-btn" role="tab" aria-selected="true"  id="tab-nps"    onclick="setTipo('nps')">NPS línea</button>
+        <button class="tab-btn" role="tab" aria-selected="false" id="tab-ces"    onclick="setTipo('ces')">CES</button>
+        <button class="tab-btn" role="tab" aria-selected="false" id="tab-isn"    onclick="setTipo('isn')">ISN</button>
+        <button class="tab-btn" role="tab" aria-selected="false" id="tab-linea"  onclick="setTipo('linea')">Línea simple</button>
+        <button class="tab-btn" role="tab" aria-selected="false" id="tab-funnel" onclick="setTipo('funnel')">Funnel</button>
+        <button class="tab-btn" role="tab" aria-selected="false" id="tab-comp"   onclick="setTipo('comp')">Composición</button>
+        <button class="tab-btn" role="tab" aria-selected="false" id="tab-barras" onclick="setTipo('barras')">Barras</button>
+        <button class="tab-btn" role="tab" aria-selected="false" id="tab-avance" onclick="setTipo('avance')">Avance</button>
+      </div>
+      <div class="keyboard-hint" aria-hidden="true">Usa ← → para navegar entre tipos</div>
+      <button class="reset-link" onclick="resetEjemplos()" type="button" aria-label="Restablecer datos de ejemplo">↺ Restablecer ejemplos</button>
+    </div>
+
+    <div id="sec-title" class="section-group">
+      <label class="slbl" for="chart-title">Título del gráfico</label>
+      <div class="fg"><input type="text" id="chart-title" value="Evolución NPS" oninput="titles[tipo]=this.value;renderChart()"></div>
+    </div>
+
+    <fieldset id="sec-kpi" style="border:none;padding:0;">
+      <legend class="slbl">Tarjetas KPI</legend>
+      <div class="cards-grid">
+        <div class="mc">
+          <input type="text" id="kpi-meta-lbl" value="Meta 2026" oninput="renderChart()" class="mc-lbl" aria-label="Etiqueta tarjeta meta">
+          <input type="text" id="kpi-meta" value="45%" oninput="renderChart()" class="mc-val" aria-label="Valor meta">
+        </div>
+        <div class="mc">
+          <input type="text" id="kpi-sprom-lbl" value="Promedio 2026" oninput="renderChart()" class="mc-lbl" aria-label="Etiqueta promedio">
+          <input type="text" id="kpi-sprom" value="-2%" oninput="renderChart()" class="mc-val amb" aria-label="Valor promedio">
+        </div>
+        <div class="mc">
+          <input type="text" id="k3lbl-input" value="Actual 2026" oninput="renderChart()" class="mc-lbl" aria-label="Etiqueta Web">
+          <input type="text" id="kpi-web" value="21%" oninput="renderChart()" class="mc-val" aria-label="Valor Web">
+        </div>
+        <div class="mc">
+          <input type="text" id="kpi-wprom-lbl" value="Promedio anual" oninput="renderChart()" class="mc-lbl" aria-label="Etiqueta Web promedio">
+          <input type="text" id="kpi-wprom" value="0%" oninput="renderChart()" class="mc-val amb" aria-label="Valor Web promedio">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset id="sec-per" style="border:none;padding:0;">
+      <legend class="slbl">Puntos de datos</legend>
+      <div style="display:grid;grid-template-columns:1fr 80px 80px 32px;gap:8px;margin-bottom:6px;" aria-hidden="true">
+        <div class="col-hdr" style="text-align:left;">Periodo</div><div class="col-hdr">Valor</div><div class="col-hdr">N° personas</div><div></div>
+      </div>
+      <div id="plist" role="list" aria-label="Lista de periodos"></div>
+      <button class="btn-add" onclick="addPer()" aria-label="Agregar nuevo periodo"><span aria-hidden="true">+</span> Agregar periodo</button>
+      <div style="margin-top:12px;display:grid;grid-template-columns:100px 1fr;gap:10px;">
+        <div class="fg"><label for="mval">Meta (valor)</label><input type="number" id="mval" value="5" oninput="renderChart()"></div>
+        <div class="fg"><label for="mlbl">Etiqueta meta</label><input type="text" id="mlbl" value="Meta 2026" oninput="renderChart()"></div>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="show-meta" onchange="renderChart()" style="width:14px;height:14px;cursor:pointer;">
+        <label for="show-meta" style="font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;">Mostrar línea de meta</label>
+      </div>
+    </fieldset>
+
+    <fieldset id="sec-dist" style="border:none;padding:0;">
+      <legend class="slbl">Distribución NPS</legend>
+      <div class="fg" style="margin-bottom:9px;"><label for="dtit">Título</label><input type="text" id="dtit" value="Distribución NPS (ejemplo)" oninput="renderChart()"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="dist-row">
+          <div class="dist-lbl"><div class="dot" style="background:#002064" aria-hidden="true"></div>Promotores</div>
+          <input type="number" id="dp" value="14" oninput="renderChart()" aria-label="Cantidad de promotores">
+          <input type="text" id="dpl" value="14 personas" oninput="renderChart()" aria-label="Descripción promotores">
+        </div>
+        <div class="dist-row">
+          <div class="dist-lbl"><div class="dot" style="background:#0063FF" aria-hidden="true"></div>Neutros</div>
+          <input type="number" id="dn" value="3" oninput="renderChart()" aria-label="Cantidad de neutros">
+          <input type="text" id="dnl" value="3 personas" oninput="renderChart()" aria-label="Descripción neutros">
+        </div>
+        <div class="dist-row">
+          <div class="dist-lbl"><div class="dot" style="background:#9455D2" aria-hidden="true"></div>Detractores</div>
+          <input type="number" id="dd" value="14" oninput="renderChart()" aria-label="Cantidad de detractores">
+          <input type="text" id="ddl" value="14 personas" oninput="renderChart()" aria-label="Descripción detractores">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset id="sec-ces" style="display:none;border:none;padding:0;">
+      <legend class="slbl">Puntos de datos CES</legend>
+      <div style="display:grid;grid-template-columns:1fr 80px 80px 32px;gap:8px;margin-bottom:6px;" aria-hidden="true">
+        <div class="col-hdr" style="text-align:left;">Periodo</div><div class="col-hdr">Valor</div><div class="col-hdr">N° personas</div><div></div>
+      </div>
+      <div id="ceslist" role="list" aria-label="Lista de periodos CES"></div>
+      <button class="btn-add" onclick="addCes()" aria-label="Agregar nuevo periodo CES"><span aria-hidden="true">+</span> Agregar periodo</button>
+      <div style="margin-top:12px;display:grid;grid-template-columns:100px 1fr;gap:10px;">
+        <div class="fg"><label for="ces-mval">Meta (valor)</label><input type="number" id="ces-mval" value="2.05" step="0.01" oninput="renderChart()"></div>
+        <div class="fg"><label for="ces-mlbl">Etiqueta meta</label><input type="text" id="ces-mlbl" value="Meta CES 2026" oninput="renderChart()"></div>
+      </div>
+    </fieldset>
+
+    <fieldset id="sec-isn" style="display:none;border:none;padding:0;">
+      <legend class="slbl">Puntos de datos ISN</legend>
+      <div style="display:grid;grid-template-columns:1fr 80px 80px 32px;gap:8px;margin-bottom:6px;" aria-hidden="true">
+        <div class="col-hdr" style="text-align:left;">Periodo</div><div class="col-hdr">Valor</div><div class="col-hdr">N° personas</div><div></div>
+      </div>
+      <div id="isnlist" role="list" aria-label="Lista de periodos ISN"></div>
+      <button class="btn-add" onclick="addIsn()" aria-label="Agregar nuevo periodo ISN"><span aria-hidden="true">+</span> Agregar periodo</button>
+      <div style="margin-top:12px;display:grid;grid-template-columns:100px 1fr;gap:10px;">
+        <div class="fg"><label for="isn-mval">Meta (valor)</label><input type="number" id="isn-mval" value="58" oninput="renderChart()"></div>
+        <div class="fg"><label for="isn-mlbl">Etiqueta meta</label><input type="text" id="isn-mlbl" value="Meta ISN 2026" oninput="renderChart()"></div>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="isn-show-badge" checked onchange="renderChart()" style="width:14px;height:14px;cursor:pointer;">
+        <label for="isn-show-badge" style="font-size:11px;font-weight:500;color:var(--text2);cursor:pointer;">Mostrar caja verde</label>
+      </div>
+    </fieldset>
+
+
+
+    <fieldset id="sec-comp" style="display:none;border:none;padding:0;">
+      <legend class="slbl">Segmentos</legend>
+      <div style="display:grid;grid-template-columns:1fr 80px 50px 32px;gap:8px;margin-bottom:5px;" aria-hidden="true">
+        <div class="col-hdr" style="text-align:left;">Etiqueta</div><div class="col-hdr">n</div><div class="col-hdr">Color</div><div></div>
+      </div>
+      <div id="complist" role="list" aria-label="Lista de segmentos"></div>
+      <button class="btn-add" onclick="addComp()" aria-label="Agregar nuevo segmento"><span aria-hidden="true">+</span> Agregar segmento</button>
+    </fieldset>
+
+    <fieldset id="sec-bar" style="display:none;border:none;padding:0;">
+      <legend class="slbl">Barras</legend>
+      <div style="display:grid;grid-template-columns:1fr 80px 32px;gap:8px;margin-bottom:5px;" aria-hidden="true">
+        <div class="col-hdr" style="text-align:left;">Etiqueta</div><div class="col-hdr">%</div><div></div>
+      </div>
+      <div id="barlist" role="list" aria-label="Lista de barras"></div>
+      <button class="btn-add" onclick="addBar()" aria-label="Agregar nueva barra"><span aria-hidden="true">+</span> Agregar barra</button>
+      <div style="margin-top:9px;" class="fg"><label for="barcol">Color</label><input type="color" id="barcol" value="#0063FF" oninput="renderChart()"></div>
+    </fieldset>
+
+    <fieldset id="sec-fun" style="display:none;border:none;padding:0;">
+      <legend class="slbl">Pasos del funnel</legend>
+      <div style="display:grid;grid-template-columns:1fr 80px 80px 32px;gap:8px;margin-bottom:5px;" aria-hidden="true">
+        <div class="col-hdr" style="text-align:left;">Etapa</div><div class="col-hdr">n</div><div class="col-hdr">%</div><div></div>
+      </div>
+      <div id="funlist" role="list" aria-label="Lista de etapas del funnel"></div>
+      <button class="btn-add" onclick="addFun()" aria-label="Agregar nueva etapa"><span aria-hidden="true">+</span> Agregar etapa</button>
+      <div style="margin-top:11px;display:flex;flex-direction:column;gap:8px;">
+        <div class="fg"><label for="fclbl">Etiqueta conversión</label><input type="text" id="fclbl" value="Conversión total" oninput="renderChart()"></div>
+        <div class="fg"><label for="fcval">Valor conversión</label><input type="text" id="fcval" value="13,9%" oninput="renderChart()"></div>
+        <div class="fg"><label for="fcn">número de usuarios</label><input type="text" id="fcn" value="88 usuarios" oninput="renderChart()"></div>
+      </div>
+    </fieldset>
+
+    <fieldset id="sec-av" style="display:none;border:none;padding:0;">
+      <legend class="slbl">Barra de avance apilada</legend>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+        <div class="fg"><label for="av-item">Ítem medido</label><input type="text" id="av-item" value="Ítem" oninput="renderChart()"></div>
+        <div class="fg" style="display:none;"><label for="av-summary">Etiqueta resumen</label><input type="text" id="av-summary" value="64%" oninput="renderChart()"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 70px 50px 32px;gap:8px;margin-bottom:5px;" aria-hidden="true">
+        <div class="col-hdr" style="text-align:left;">Segmento</div><div class="col-hdr">%</div><div class="col-hdr">Color</div><div></div>
+      </div>
+      <div id="avlist" role="list" aria-label="Lista de segmentos de avance"></div>
+      <button class="btn-add" onclick="addAv()" aria-label="Agregar nuevo segmento de avance"><span aria-hidden="true">+</span> Agregar segmento</button>
+    </fieldset>
+
+  </aside>
+
+  <main class="preview-area" id="main-content" aria-label="Vista previa del gráfico">
+    <div class="slbl" aria-hidden="true">Vista previa</div>
+    <div id="cw" role="img" aria-label="Gráfico generado">
+      <div class="ci" id="cc">
+        <div class="empty"><div class="ei" aria-hidden="true">📊</div><p>Presiona <strong>Actualizar gráfico</strong></p></div>
+      </div>
+      <div class="btn-bar">
+        <button class="btn-secondary" onclick="renderChart()" aria-label="Actualizar vista previa del gráfico">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/>
+          </svg>
+          Actualizar
+        </button>
+        <button class="btn-primary" onclick="dlPNG()" aria-label="Descargar gráfico como imagen PNG">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Descargar PNG
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+/* ─── Estado global ────────────────────────────────────────────── */
+let tipo = 'nps';
+/* npspers y lineapers son arrays independientes; `pers` apunta al activo
+   (NPS o Línea) para que la sección compartida conserve datos por tab. */
+let npspers = [], lineapers = [], pers = npspers;
+let bars = [], comps = [], funs = [], avs = [], cespers = [], isnpers = [];
+let chart = null;
+
+/* Título recordado por tipo de gráfico */
+let titles = {
+  nps:'Evolución NPS', linea:'Evolución de la métrica',
+  ces:'Evolución CES', isn:'Evolución ISN',
+  funnel:'', comp:'', barras:'', avance:''
+};
+let prevTipo = 'nps';
+
+/* ─── Datos por defecto ────────────────────────────────────────── */
+const DEF = {
+  nps: {
+    pers: [
+      {l:'Q1 2025',v:50,n:1842},
+      {l:'Q2 2025',v:53,n:1435},
+      {l:'Q3 2025',v:53,n:1468},
+      {l:'Enero',v:44,n:352},
+      {l:'Febrero',v:55,n:365}
+    ],
+    meta: 30, mlbl: 'Meta 2026',
+    sp: '35%', w: '27%', wp: '12%', k3: 'Actual 2026',
+    dt: 'Distribución NPS (ejemplo)',
+    p: 14, ne: 3, de: 14,
+    pl: '14 personas', nl: '3 personas', dl: '14 personas'
+  },
+  linea: {
+    pers: [
+      {l:'Enero',v:0,n:0},
+      {l:'Febrero',v:49,n:295},
+      {l:'Marzo',v:58,n:2461}
+    ],
+    meta: 58, mlbl: 'Meta 2026'
+  },
+  ces: {
+    pers: [
+      {l:'Q1 2025',v:0,n:0},
+      {l:'Q2 2025',v:0,n:0},
+      {l:'Marzo 2026',v:2.05,n:482}
+    ],
+    meta: 2.05, mlbl: 'Meta CES 2026'
+  },
+  isn: {
+    pers: [
+      {l:'Enero',v:0,n:0},
+      {l:'Febrero',v:49,n:295},
+      {l:'Marzo',v:58,n:2461}
+    ],
+    meta: 58, mlbl: 'Meta ISN 2026'
+  }
+};
+
+/* ─── Toast ────────────────────────────────────────────────────── */
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ─── Helper: rounded rect ─────────────────────────────────────── */
+function rrect(c, x, y, w, h, r) {
+  c.beginPath();
+  c.moveTo(x+r, y);
+  c.lineTo(x+w-r, y);
+  c.quadraticCurveTo(x+w, y, x+w, y+r);
+  c.lineTo(x+w, y+h-r);
+  c.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  c.lineTo(x+r, y+h);
+  c.quadraticCurveTo(x, y+h, x, y+h-r);
+  c.lineTo(x, y+r);
+  c.quadraticCurveTo(x, y, x+r, y);
+  c.closePath();
+}
+
+/* ─── Escape helpers ───────────────────────────────────────────── */
+function escHTML(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+function escAttr(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ─── Título del gráfico ───────────────────────────────────────── */
+function getTitleHTML() {
+  const v = document.getElementById('chart-title')?.value || '';
+  return v ? `<div class="chart-title-display">${escHTML(v)}</div>` : '';
+}
+
+/* ─── Focus helper ─────────────────────────────────────────────── */
+function focusLastInput(listId) {
+  requestAnimationFrame(() => {
+    const list = document.getElementById(listId);
+    const items = list.querySelectorAll('[role="listitem"]');
+    if (items.length) {
+      const firstInput = items[items.length - 1].querySelector('input');
+      if (firstInput) firstInput.focus();
+    }
+  });
+}
+
+/* ─── NPS / Línea simple ────────────────────────────────────────── */
+function rLinea() {
+  const isNPS = tipo === 'nps';
+  const mv = parseFloat(document.getElementById('mval').value) || 0;
+  const ml = document.getElementById('mlbl').value || 'Meta 2026';
+  const showMeta = document.getElementById('show-meta')?.checked ?? false;
+
+  let kH = '';
+  if (isNPS) {
+    const sp = document.getElementById('kpi-sprom').value || '—';
+    const w  = document.getElementById('kpi-web').value   || '—';
+    const wp = document.getElementById('kpi-wprom').value || '—';
+    const k3 = document.getElementById('k3lbl-input').value  || 'Web 2026';
+    const km = document.getElementById('kpi-meta').value     || '43%';
+    const km_lbl = document.getElementById('kpi-meta-lbl').value  || 'Meta 2026';
+    const sp_lbl = document.getElementById('kpi-sprom-lbl').value || 'Promedio 2026';
+    const wp_lbl = document.getElementById('kpi-wprom-lbl').value || 'Promedio anual';
+
+    // Calcula la diferencia entre meta y promedio. Devuelve HTML listo para insertar,
+    // o cadena vacía si los valores no son numéricos parseables.
+    const diffLine = (metaStr, promStr) => {
+      const parseNum = s => {
+        const m = String(s).match(/-?\d+(?:[.,]\d+)?/);
+        return m ? parseFloat(m[0].replace(',', '.')) : NaN;
+      };
+      const metaN = parseNum(metaStr);
+      const promN = parseNum(promStr);
+      if (isNaN(metaN) || isNaN(promN)) return '';
+      const diff = +(metaN - promN).toFixed(1);
+      const abs = Math.abs(diff);
+      const absStr = Number.isInteger(abs) ? abs : abs.toFixed(1);
+      let txt;
+      if (diff > 0)      txt = `Faltan ${absStr}pts`;
+      else if (diff < 0) txt = `Excede ${absStr}pts`;
+      else               txt = 'En meta';
+      return `<div class="kd" style="color:#060B25">${txt}</div>`;
+    };
+
+    const sDiffHTML = diffLine(km, sp);
+    const wDiffHTML = diffLine(w, wp);
+
+    kH = `<div class="krow" role="group" aria-label="Indicadores KPI">
+      <div class="kc"><div class="kl">${escHTML(km_lbl)}</div><div class="kv">${escHTML(km)}</div></div>
+      <div class="kc"><div class="kl">${escHTML(sp_lbl)}</div><div class="kv" style="color:#060B25">${escHTML(sp)}</div>${sDiffHTML}</div>
+      <div class="kc"><div class="kl">${escHTML(k3)}</div><div class="kv">${escHTML(w)}</div></div>
+      <div class="kc"><div class="kl">${escHTML(wp_lbl)}</div><div class="kv" style="color:#060B25">${escHTML(wp)}</div>${wDiffHTML}</div>
+    </div>`;
+  }
+
+  let dH = '';
+  if (isNPS) {
+    const p  = parseInt(document.getElementById('dp').value) || 0;
+    const ne = parseInt(document.getElementById('dn').value) || 0;
+    const de = parseInt(document.getElementById('dd').value) || 0;
+    const tot = p + ne + de;
+    const pp = tot ? (p/tot*100).toFixed(0)  : 0;
+    const pn = tot ? (ne/tot*100).toFixed(0) : 0;
+    const pd = tot ? (de/tot*100).toFixed(0) : 0;
+    const pl = document.getElementById('dpl').value;
+    const nl = document.getElementById('dnl').value;
+    const dl = document.getElementById('ddl').value;
+    const dt = document.getElementById('dtit').value;
+    dH = `<div class="dst">${escHTML(dt)}</div>
+    <div class="dbw" role="img" aria-label="Distribución: Detractores ${pd}%, Neutros ${pn}%, Promotores ${pp}%">
+      <div class="dseg" style="width:${pd}%;background:#9455D2;font-size:12px;">${pd}%</div>
+      <div class="dseg" style="width:${pn}%;background:#0063FF;font-size:12px;">${pn}%</div>
+      <div class="dseg" style="width:${pp}%;background:#002064;font-size:13px;">${pp>18?'Promotores '+pp+'%':pp+'%'}</div>
+    </div>
+    <div class="dleg">
+      <div class="dli"><div class="dot" style="background:#9455D2;" aria-hidden="true"></div>Detractores — ${escHTML(dl)}</div>
+      <div class="dli"><div class="dot" style="background:#0063FF;" aria-hidden="true"></div>Neutros — ${escHTML(nl)}</div>
+      <div class="dli"><div class="dot" style="background:#002064;" aria-hidden="true"></div>Promotores — ${escHTML(pl)}</div>
+    </div>`;
+  }
+
+  document.getElementById('cc').innerHTML =
+    `${kH}${getTitleHTML()}<div class="cc"><canvas id="mc"></canvas></div>${dH}`;
+
+  if (chart) { chart.destroy(); chart = null; }
+
+  const lbls  = pers.map(p => p.l);
+  const vals  = pers.map(p => p.v);
+  const ns    = pers.map(p => p.n);
+  const mdata = pers.map(() => mv);
+  const ptc   = vals.map(() => '#0063FF');
+
+  const ctx = document.getElementById('mc').getContext('2d');
+  const minV = Math.min(...vals, 0);
+  const maxV = Math.max(...vals, mv, 0);
+  const pad  = Math.max(Math.abs(maxV - minV) * .2, 10);
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 230);
+  grad.addColorStop(0,   'rgba(148,170,255,.35)');
+  grad.addColorStop(1,   'rgba(148,170,255,.02)');
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: lbls,
+      datasets: [
+        {
+          data: vals,
+          borderColor: 'rgba(0,0,0,0)',
+          borderWidth: 2,
+          pointBackgroundColor: ptc,
+          pointBorderColor: 'white',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true,
+          backgroundColor: grad,
+          tension: .1
+        },
+        {
+          data: mdata,
+          borderColor: 'rgba(0,0,0,0)',
+          borderWidth: 0,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      layout: { padding: { top: 36 } },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: {
+          grid: { color: '#EDF1F9' },
+          border: { display: false },
+          ticks: { font: { family: 'Poppins', size: 10 }, color: '#6B7280' }
+        },
+        y: {
+          min: minV < 0 ? Math.floor((minV - pad) / 10) * 10 : 0,
+          max: Math.ceil((maxV + pad) / 10) * 10,
+          grid: { color: '#EDF1F9' },
+          border: { display: false },
+          ticks: {
+            font: { family: 'Poppins', size: 10 },
+            color: '#6B7280',
+            padding:12,
+            stepSize: 10,
+            callback: v => v + '%'
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'cd',
+      afterDraw(ch) {
+        const { ctx: c, scales: sc, chartArea: a } = ch;
+        if (sc.y.min < 0 && sc.y.max > 0) {
+          const y0 = sc.y.getPixelForValue(0);
+          c.save();
+          c.strokeStyle = 'rgba(235,84,84,.3)';
+          c.lineWidth = 1;
+          c.setLineDash([4,4]);
+          c.beginPath(); c.moveTo(a.left, y0); c.lineTo(a.right, y0); c.stroke();
+          c.restore();
+        }
+        const meta = ch.getDatasetMeta(0);
+        const pts  = meta.data;
+        c.save();
+        c.lineWidth = 2;
+        c.lineJoin  = 'round';
+        c.lineCap   = 'round';
+        c.setLineDash([]);
+        c.strokeStyle = '#0063FF';
+        for (let i = 0; i < pts.length - 1; i++) {
+          c.beginPath(); c.moveTo(pts[i].x, pts[i].y); c.lineTo(pts[i+1].x, pts[i+1].y); c.stroke();
+        }
+        // Línea de meta (opcional)
+        if (showMeta && mv >= sc.y.min && mv <= sc.y.max) {
+          const yMeta = sc.y.getPixelForValue(mv);
+          c.strokeStyle = '#9455D2';
+          c.lineWidth = 1.5;
+          c.setLineDash([6,4]);
+          c.beginPath(); c.moveTo(a.left, yMeta); c.lineTo(a.right, yMeta); c.stroke();
+          c.setLineDash([]);
+          const lblTxt = `${ml} · ${mv}%`;
+          c.font = '600 11px Poppins';
+          const tw = c.measureText(lblTxt).width;
+          c.fillStyle = 'rgba(255,255,255,.85)';
+          rrect(c, a.left + 2, yMeta - 18, tw + 10, 15, 3); c.fill();
+          c.fillStyle = '#9455D2';
+          c.textAlign = 'left';
+          c.fillText(lblTxt, a.left + 7, yMeta - 7);
+        }
+        pts.forEach((pt, i) => {
+          const v = vals[i], n = ns[i], ab = v >= 0;
+          const bw = 46, bh = n ? 40 : 22;
+          const bx = pt.x - bw/2;
+          const by = ab ? pt.y - bh - 10 : pt.y + 10;
+          c.shadowColor = 'rgba(0,32,100,0.12)'; c.shadowBlur = 6; c.shadowOffsetY = 2;
+          c.fillStyle = 'white';
+          rrect(c, bx, by, bw, bh, 5); c.fill();
+          c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
+          c.fillStyle = v < 0 ? '#EB5454' : '#060B25'; c.font = '600 12px Poppins'; c.textAlign = 'center';
+          c.fillText(v + '%', pt.x, by + 14);
+          if (n) {
+            c.fillStyle = '#6B7280'; c.font = '400 11px Poppins';
+            const rowY = by + 28;
+            const iconX = pt.x - 18;
+            c.beginPath(); c.arc(iconX + 4, rowY - 3, 2.5, 0, Math.PI*2); c.fill();
+            c.beginPath(); c.arc(iconX + 4, rowY + 3, 4, Math.PI, Math.PI*2); c.fill();
+            c.fillText(n, pt.x + 3, rowY + 1);
+          }
+        });
+        c.restore();
+      }
+    }]
+  });
+}
+
+/* ─── CES ───────────────────────────────────────────────────────── */
+function rCES() {
+  const mv  = parseFloat(document.getElementById('ces-mval').value) || 0;
+
+  document.getElementById('cc').innerHTML =
+    `${getTitleHTML()}<div class="cc"><canvas id="mc"></canvas></div>`;
+
+  if (chart) { chart.destroy(); chart = null; }
+
+  const lbls  = cespers.map(p => p.l);
+  const vals  = cespers.map(p => p.v);
+  const ns    = cespers.map(p => p.n);
+  const mdata = cespers.map(() => mv);
+
+  // En CES: valor > meta = malo (rojo), valor <= meta = bueno (azul)
+  const ptc = vals.map(v => v > mv ? '#EB5454' : '#0063FF');
+
+  const maxV = Math.max(...vals, mv, 0);
+  const yMax = Math.ceil((maxV * 1.25) * 2) / 2 || 3;
+
+  const ctx = document.getElementById('mc').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 230);
+  grad.addColorStop(0, 'rgba(148,170,255,.35)');
+  grad.addColorStop(1, 'rgba(148,170,255,.02)');
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: lbls,
+      datasets: [
+        {
+          data: vals,
+          borderColor: 'rgba(0,0,0,0)',
+          borderWidth: 2,
+          pointBackgroundColor: ptc,
+          pointBorderColor: 'white',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true,
+          backgroundColor: grad,
+          tension: .1
+        },
+        {
+          data: mdata,
+          borderColor: 'rgba(0,0,0,0)',
+          borderWidth: 0,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      layout: { padding: { top: 36 } },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: {
+          grid: { color: '#EDF1F9' },
+          border: { display: false },
+          ticks: { font: { family: 'Poppins', size: 10 }, color: '#6B7280' }
+        },
+        y: {
+          min: 0,
+          max: yMax,
+          grid: { color: '#EDF1F9' },
+          border: { display: false },
+          ticks: {
+            font: { family: 'Poppins', size: 10 },
+            color: '#6B7280',
+            padding: 8,
+            stepSize: 0.5,
+            callback: v => v.toLocaleString('es-CL', {minimumFractionDigits: 1, maximumFractionDigits: 1})
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'ces-draw',
+      afterDraw(ch) {
+        const { ctx: c, scales: sc, chartArea: a } = ch;
+        const meta = ch.getDatasetMeta(0);
+        const pts  = meta.data;
+
+        c.save();
+        c.lineWidth = 2;
+        c.lineJoin  = 'round';
+        c.lineCap   = 'round';
+        c.setLineDash([]);
+        for (let i = 0; i < pts.length - 1; i++) {
+          const col0 = vals[i]   > mv ? '#EB5454' : '#0063FF';
+          const col1 = vals[i+1] > mv ? '#EB5454' : '#0063FF';
+          if (col0 === col1) {
+            c.strokeStyle = col0;
+          } else {
+            const g = c.createLinearGradient(pts[i].x, pts[i].y, pts[i+1].x, pts[i+1].y);
+            g.addColorStop(0, col0); g.addColorStop(1, col1);
+            c.strokeStyle = g;
+          }
+          c.beginPath(); c.moveTo(pts[i].x, pts[i].y); c.lineTo(pts[i+1].x, pts[i+1].y); c.stroke();
+        }
+
+        pts.forEach((pt, i) => {
+          const v = vals[i], n = ns[i];
+          const bw = 52, bh = n ? 40 : 22;
+          const bx = pt.x - bw/2;
+          const by = pt.y - bh - 10;
+          c.shadowColor = 'rgba(0,32,100,0.12)'; c.shadowBlur = 6; c.shadowOffsetY = 2;
+          c.fillStyle = 'white';
+          rrect(c, bx, by, bw, bh, 5); c.fill();
+          c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
+          c.fillStyle = '#060B25'; c.font = '600 12px Poppins'; c.textAlign = 'center';
+          c.fillText(v.toLocaleString('es-CL', {minimumFractionDigits: 2, maximumFractionDigits: 2}), pt.x, by + 14);
+          if (n) {
+            c.fillStyle = '#6B7280'; c.font = '400 11px Poppins';
+            const rowY = by + 28;
+            const iconX = pt.x - 18;
+            c.beginPath(); c.arc(iconX + 4, rowY - 3, 2.5, 0, Math.PI*2); c.fill();
+            c.beginPath(); c.arc(iconX + 4, rowY + 3, 4, Math.PI, Math.PI*2); c.fill();
+            c.fillText(n, pt.x + 3, rowY + 1);
+          }
+        });
+        c.restore();
+      }
+    }]
+  });
+}
+
+/* ─── ISN ───────────────────────────────────────────────────────── */
+function rISN() {
+  const mv  = parseFloat(document.getElementById('isn-mval').value) || 0;
+  const ml  = document.getElementById('isn-mlbl').value || 'Meta ISN';
+
+  document.getElementById('cc').innerHTML =
+    `${getTitleHTML()}<div class="cc"><canvas id="mc"></canvas></div>`;
+
+  if (chart) { chart.destroy(); chart = null; }
+
+  const lbls  = isnpers.map(p => p.l);
+  const vals  = isnpers.map(p => p.v);
+  const ns    = isnpers.map(p => p.n);
+  const mdata = isnpers.map(() => mv);
+
+  const minV = Math.min(...vals, 0);
+  const maxV = Math.max(...vals, mv, 0);
+  const yMax = Math.ceil((maxV * 1.15) / 10) * 10 || 10;
+  const yMin = minV < 0 ? Math.floor((minV * 1.15) / 10) * 10 : 0;
+
+  const ctx = document.getElementById('mc').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 230);
+  grad.addColorStop(0, 'rgba(148,170,255,.45)');
+  grad.addColorStop(1, 'rgba(148,170,255,.02)');
+
+  const showBadge = document.getElementById('isn-show-badge')?.checked ?? true;
+  const lastIdx = vals.reduce((acc, v, i) => v > 0 ? i : acc, -1);
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: lbls,
+      datasets: [
+        {
+          data: vals,
+          borderColor: 'rgba(0,0,0,0)',
+          borderWidth: 2,
+          pointBackgroundColor: '#0063FF',
+          pointBorderColor: 'white',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          fill: true,
+          backgroundColor: grad,
+          tension: 0
+        },
+        {
+          data: mdata,
+          borderColor: 'rgba(0,0,0,0)',
+          borderWidth: 0,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      layout: { padding: { top: 36, right: (showBadge && lastIdx >= 0) ? 110 : 20 } },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: {
+          grid: { color: '#EDF1F9' },
+          border: { display: false },
+          ticks: { font: { family: 'Poppins', size: 10 }, color: '#6B7280' }
+        },
+        y: {
+          min: yMin,
+          max: yMax,
+          grid: { color: '#EDF1F9' },
+          border: { display: false },
+          ticks: {
+            font: { family: 'Poppins', size: 10 },
+            color: '#6B7280',
+            padding: 8,
+            stepSize: 10,
+            callback: v => v
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'isn-draw',
+      afterDraw(ch) {
+        const { ctx: c, scales: sc, chartArea: a } = ch;
+        const meta = ch.getDatasetMeta(0);
+        const pts  = meta.data;
+
+        c.save();
+        c.lineWidth = 2;
+        c.lineJoin  = 'round';
+        c.lineCap   = 'round';
+        c.setLineDash([]);
+        c.strokeStyle = '#0063FF';
+        for (let i = 0; i < pts.length - 1; i++) {
+          c.beginPath();
+          c.moveTo(pts[i].x, pts[i].y);
+          c.lineTo(pts[i+1].x, pts[i+1].y);
+          c.stroke();
+        }
+
+        if (showBadge && lastIdx >= 0) {
+          const bw = 100, bh = 52, r = 8;
+          const bx = a.right + 8;
+          const by = a.top;
+          c.shadowColor = 'rgba(0,0,0,0.15)'; c.shadowBlur = 8; c.shadowOffsetY = 2;
+          c.fillStyle = '#1A6B35';
+          rrect(c, bx, by, bw, bh, r); c.fill();
+          c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
+          c.fillStyle = 'white';
+          c.font = '700 22px Poppins'; c.textAlign = 'center';
+          c.fillText(vals[lastIdx] + '%', bx + bw/2, by + 28);
+          c.font = '400 10px Poppins';
+          c.fillText(ml, bx + bw/2, by + 44);
+        }
+
+        pts.forEach((pt, i) => {
+          const v = vals[i], n = ns[i];
+          const bw = 52, bh = n ? 40 : 22;
+          const bx = pt.x - bw/2;
+          const by = pt.y - bh - 10;
+          c.shadowColor = 'rgba(0,32,100,0.12)'; c.shadowBlur = 6; c.shadowOffsetY = 2;
+          c.fillStyle = 'white';
+          rrect(c, bx, by, bw, bh, 5); c.fill();
+          c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0;
+          c.fillStyle = v < 0 ? '#EB5454' : '#060B25'; c.font = '600 12px Poppins'; c.textAlign = 'center';
+          c.fillText(v + '%', pt.x, by + 14);
+          if (n) {
+            c.fillStyle = '#6B7280'; c.font = '400 11px Poppins';
+            const rowY = by + 28;
+            const iconX = pt.x - 18;
+            c.beginPath(); c.arc(iconX + 4, rowY - 3, 2.5, 0, Math.PI*2); c.fill();
+            c.beginPath(); c.arc(iconX + 4, rowY + 3, 4, Math.PI, Math.PI*2); c.fill();
+            c.fillText(n, pt.x + 3, rowY + 1);
+          }
+        });
+        c.restore();
+      }
+    }]
+  });
+}
+
+/* ─── Barras ────────────────────────────────────────────────────── */
+function rBarras() {
+  const col = document.getElementById('barcol').value || '#0063FF';
+  let h = `<div style="padding:4px 0;">${getTitleHTML()}`;
+  bars.forEach(b => {
+    h += `<div class="bci">
+      <div class="bcl">${escHTML(b.l)}</div>
+      <div class="bct" role="img" aria-label="${escAttr(b.l)}: ${b.p}%">
+        <div class="bcf" style="width:${b.p}%;background:${col};"><span class="bcv">${b.p}%</span></div>
+      </div>
+    </div>`;
+  });
+  h += '</div>';
+  if (chart) { chart.destroy(); chart = null; }
+  document.getElementById('cc').innerHTML = h;
+}
+
+/* ─── Composición ───────────────────────────────────────────────── */
+function rComp() {
+  const tot = comps.reduce((s, c) => s + c.n, 0);
+  if (!tot) {
+    document.getElementById('cc').innerHTML = '<div class="empty"><div class="ei" aria-hidden="true">📊</div><p>Agrega segmentos para ver el gráfico</p></div>';
+    return;
+  }
+  let bH = `${getTitleHTML()}<div class="cbar" role="img" aria-label="Gráfico de composición">`;
+  let lH = '<div class="dleg" style="margin-top:9px;">';
+  comps.forEach(s => {
+    const pct = (s.n / tot * 100).toFixed(1);
+    bH += `<div class="cseg" style="width:${pct}%;background:${s.c};"><div class="cn">${s.n}</div><div class="cp">${pct}%</div></div>`;
+    lH += `<div class="dli"><div class="dot" style="background:${s.c};" aria-hidden="true"></div>${escHTML(s.l)}</div>`;
+  });
+  if (chart) { chart.destroy(); chart = null; }
+  document.getElementById('cc').innerHTML = bH + '</div>' + lH + '</div>';
+}
+
+/* ─── Funnel ────────────────────────────────────────────────────── */
+function rFunnel() {
+  if (!funs.length) {
+    document.getElementById('cc').innerHTML = '<div class="empty"><div class="ei" aria-hidden="true">📊</div><p>Agrega pasos para ver el funnel</p></div>';
+    return;
+  }
+  const cl = document.getElementById('fclbl').value || 'Conversión total';
+  const cv = document.getElementById('fcval').value || '';
+  const cn = document.getElementById('fcn').value   || '';
+
+  // Escala relativa al paso anterior con amortiguación:
+  // - Cada paso se calcula como % del paso previo y se acumula multiplicativamente.
+  // - Se aplica raíz cuadrada al ratio para suavizar caídas extremas
+  //   (un drop del 1% real se renderiza como ~10% visual, manteniendo la sensación de embudo
+  //   sin que las barras siguientes colapsen).
+  // - Se usa un mínimo bajo (4%) para que aún diferencien entre sí, pero el badge sale al lado.
+  const MIN_W = 4;
+  const widths = [];
+  funs.forEach((s, i) => {
+    if (i === 0) {
+      widths.push(100);
+    } else {
+      const prev = funs[i-1].n || 0;
+      const curr = s.n || 0;
+      const ratio = prev > 0 ? Math.min(curr / prev, 1) : 0;
+      const visualRatio = Math.sqrt(ratio);
+      const newW = widths[i-1] * visualRatio;
+      widths.push(Math.max(newW, MIN_W));
+    }
+  });
+
+  let h = `<div style="padding:4px 0;">${getTitleHTML()}`;
+  funs.forEach((s, i) => {
+    const w      = widths[i].toFixed(1);
+    const prevW  = i === 0 ? w : widths[i-1].toFixed(1);
+    const isNarrow = parseFloat(w) < 28;
+    const badgeStyle = `display:inline-flex;align-items:center;background:white;border:1px solid #D6DFF0;border-radius:4px;padding:2px 6px;font-size:11px;font-weight:600;color:#41464E;white-space:nowrap;line-height:1.4;`;
+    const userIcon = `<svg width="11" height="12" viewBox="0 0 11 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right:4px;flex-shrink:0;"><circle cx="5.5" cy="3.5" r="2.5" fill="#41464E"/><path d="M1.5 11 A4 4 0 0 1 9.5 11 Z" fill="#41464E"/></svg>`;
+    const badgeHTML = `<span style="${badgeStyle}">${userIcon}${s.n} &mdash; ${escHTML(s.p)}</span>`;
+    h += `<div class="fi">
+      <div class="fl">${escHTML(s.l)}</div>
+      <div class="ft" style="background:transparent;position:relative;overflow:visible;" role="img" aria-label="${escAttr(s.l)}: ${s.n} — ${s.p}">
+        <div style="position:absolute;top:0;left:0;width:${prevW}%;height:100%;background:#EDF1F9;border-radius:5px;"></div>
+        <div class="ff" style="width:${w}%;position:relative;overflow:visible;">${isNarrow
+          ? `<div style="position:absolute;left:calc(100% + 6px);top:50%;transform:translateY(-50%);">${badgeHTML}</div>`
+          : `<div style="display:flex;align-items:center;height:100%;padding:0 8px;">${badgeHTML}</div>`
+        }</div>
+      </div>
+    </div>`;
+  });
+  h += `<div class="ffooter"><div class="fcl">${escHTML(cl)}</div><div style="text-align:right;"><div class="fcv">${escHTML(cv)}</div><div style="font-size:10px;color:#6B7280;">${escHTML(cn)}</div></div></div></div>`;
+  if (chart) { chart.destroy(); chart = null; }
+  document.getElementById('cc').innerHTML = h;
+}
+
+/* ─── Avance ────────────────────────────────────────────────────── */
+function rAvance() {
+  if (chart) { chart.destroy(); chart = null; }
+  if (!avs.length) {
+    document.getElementById('cc').innerHTML = '<div class="empty"><div class="ei" aria-hidden="true">📊</div><p>Agrega segmentos para ver el avance</p></div>';
+    return;
+  }
+  const item     = document.getElementById('av-item').value || 'Ítem';
+  const tot      = avs.reduce((s, a) => s + a.p, 0) || 100;
+  const firstPct = avs.length ? Math.round(avs[0].p / tot * 100) : 0;
+  const summary  = `${firstPct}%`;
+  const ticks    = [0,10,20,30,40,50,60,70,80,90,100];
+  const axisH    = `<div class="av-axis" aria-hidden="true">${ticks.map(t => `<span>${t}%</span>`).join('')}</div>`;
+  const barLabel = avs.map(s => `${s.l}: ${(s.p / tot * 100).toFixed(0)}%`).join(', ');
+  let barH = `<div class="av-stacked" role="img" aria-label="Avance: ${barLabel}">`;
+  avs.forEach(s => {
+    const w = (s.p / tot * 100).toFixed(2);
+    barH += `<div class="av-seg" style="width:${w}%;background:${s.c};">${s.p / tot > 0.08 ? s.p + '%' : ''}</div>`;
+  });
+  barH += '</div>';
+  let legH = '<div class="av-legend">';
+  avs.forEach(s => { legH += `<div class="dli"><div class="dot" style="background:${s.c};" aria-hidden="true"></div>${escHTML(s.l)}</div>`; });
+  legH += '</div>';
+  const summaryH = summary ? `<div class="av-summary">${escHTML(summary)}</div>` : '';
+  document.getElementById('cc').innerHTML = `${getTitleHTML()}<div class="av-wrap"><div class="av-row"><div class="av-item-lbl">${escHTML(item)}</div><div class="av-bar-col">${barH}${axisH}</div></div>${legH}${summaryH}</div>`;
+}
+
+/* ─── Keyboard nav para tabs ───────────────────────────────────── */
+function initTabKeyboard() {
+  const tablist = document.querySelector('[role="tablist"]');
+  if (!tablist) return;
+  tablist.addEventListener('keydown', e => {
+    const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+    const idx = tabs.indexOf(document.activeElement);
+    if (idx === -1) return;
+    let next = -1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = tabs.length - 1;
+    if (next >= 0) { e.preventDefault(); tabs[next].focus(); tabs[next].click(); }
+  });
+}
+
+/* ─── Tipo de gráfico ──────────────────────────────────────────── */
+const TIPOS = ['nps','ces','isn','linea','funnel','comp','barras','avance'];
+
+function setTipo(t) {
+  // Guarda el título del tab que dejamos
+  const titleEl = document.getElementById('chart-title');
+  if (titleEl) titles[prevTipo] = titleEl.value;
+
+  tipo = t;
+  document.querySelectorAll('[role="tab"]').forEach((b, i) => {
+    const isActive = TIPOS[i] === t;
+    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    b.setAttribute('tabindex', isActive ? '0' : '-1');
+  });
+
+  const show = (id, v) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = v ? '' : 'none';
+  };
+
+  show('sec-kpi',  t === 'nps');
+  show('sec-per',  t === 'nps' || t === 'linea');
+  show('sec-dist', t === 'nps');
+  show('sec-ces',  t === 'ces');
+  show('sec-isn',  t === 'isn');
+  show('sec-comp', t === 'comp');
+  show('sec-bar',  t === 'barras');
+  show('sec-fun',  t === 'funnel');
+  show('sec-av',   t === 'avance');
+
+  // Reapunta el array activo de la sección compartida (NPS / Línea) sin resetear
+  if (t === 'nps')   { pers = npspers;   renderPUI(); }
+  if (t === 'linea') { pers = lineapers; renderPUI(); }
+
+  // Restaura el título recordado de este tab
+  if (titleEl) titleEl.value = titles[t] || '';
+
+  prevTipo = t;
+  renderChart();
+}
+
+function loadNPS(d) {
+  document.getElementById('kpi-sprom').value    = d.sp;
+  document.getElementById('kpi-web').value      = d.w;
+  document.getElementById('kpi-wprom').value    = d.wp;
+  document.getElementById('k3lbl-input').value  = d.k3;
+  document.getElementById('kpi-meta').value     = d.meta + '%';
+  document.getElementById('mval').value         = d.meta;
+  document.getElementById('mlbl').value         = d.mlbl;
+  document.getElementById('dtit').value         = d.dt;
+  document.getElementById('dp').value           = d.p;
+  document.getElementById('dn').value           = d.ne;
+  document.getElementById('dd').value           = d.de;
+  document.getElementById('dpl').value          = d.pl;
+  document.getElementById('dnl').value          = d.nl;
+  document.getElementById('ddl').value          = d.dl;
+  npspers = d.pers.map(p => ({...p}));
+  pers = npspers;
+  renderPUI();
+}
+
+/* ─── Render UIs de listas ─────────────────────────────────────── */
+function renderPUI() {
+  const l = document.getElementById('plist');
+  l.innerHTML = '';
+  pers.forEach((p, i) => {
+    const r = document.createElement('div');
+    r.className = 'prow';
+    r.setAttribute('role', 'listitem');
+    r.innerHTML = `
+      <input type="text"   value="${escAttr(p.l)}" oninput="pers[${i}].l=this.value;renderChart()" class="prow-input" aria-label="Nombre periodo ${i+1}">
+      <input type="number" value="${p.v}" oninput="pers[${i}].v=parseFloat(this.value)||0;renderChart()" class="prow-input" aria-label="Valor periodo ${i+1}">
+      <input type="number" value="${p.n}" oninput="pers[${i}].n=parseInt(this.value)||0;renderChart()" class="prow-input" aria-label="n periodo ${i+1}">
+      <button class="btn-icon" onclick="pers.splice(${i},1);renderPUI();renderChart()" aria-label="Eliminar periodo ${escAttr(p.l)}">
+        <span aria-hidden="true">×</span>
+      </button>`;
+    l.appendChild(r);
+  });
+}
+function addPer() { pers.push({l:'Nuevo',v:0,n:0}); renderPUI(); renderChart(); focusLastInput('plist'); }
+
+function renderCesUI() {
+  const l = document.getElementById('ceslist');
+  l.innerHTML = '';
+  cespers.forEach((p, i) => {
+    const r = document.createElement('div');
+    r.className = 'prow';
+    r.setAttribute('role', 'listitem');
+    r.innerHTML = `
+      <input type="text"   value="${escAttr(p.l)}" oninput="cespers[${i}].l=this.value;renderChart()" class="prow-input" aria-label="Nombre periodo ${i+1}">
+      <input type="number" value="${p.v}" step="0.01" oninput="cespers[${i}].v=parseFloat(this.value)||0;renderChart()" class="prow-input" aria-label="Valor CES periodo ${i+1}">
+      <input type="number" value="${p.n}" oninput="cespers[${i}].n=parseInt(this.value)||0;renderChart()" class="prow-input" aria-label="n periodo ${i+1}">
+      <button class="btn-icon" onclick="cespers.splice(${i},1);renderCesUI();renderChart()" aria-label="Eliminar periodo ${escAttr(p.l)}">
+        <span aria-hidden="true">×</span>
+      </button>`;
+    l.appendChild(r);
+  });
+}
+function addCes() { cespers.push({l:'Nuevo',v:0,n:0}); renderCesUI(); renderChart(); focusLastInput('ceslist'); }
+
+function renderIsnUI() {
+  const l = document.getElementById('isnlist');
+  l.innerHTML = '';
+  isnpers.forEach((p, i) => {
+    const r = document.createElement('div');
+    r.className = 'prow';
+    r.setAttribute('role', 'listitem');
+    r.innerHTML = `
+      <input type="text"   value="${escAttr(p.l)}" oninput="isnpers[${i}].l=this.value;renderChart()" class="prow-input" aria-label="Nombre periodo ${i+1}">
+      <input type="number" value="${p.v}" oninput="isnpers[${i}].v=parseFloat(this.value)||0;renderChart()" class="prow-input" aria-label="Valor ISN periodo ${i+1}">
+      <input type="number" value="${p.n}" oninput="isnpers[${i}].n=parseInt(this.value)||0;renderChart()" class="prow-input" aria-label="n periodo ${i+1}">
+      <button class="btn-icon" onclick="isnpers.splice(${i},1);renderIsnUI();renderChart()" aria-label="Eliminar periodo ${escAttr(p.l)}">
+        <span aria-hidden="true">×</span>
+      </button>`;
+    l.appendChild(r);
+  });
+}
+function addIsn() { isnpers.push({l:'Nuevo',v:0,n:0}); renderIsnUI(); renderChart(); focusLastInput('isnlist'); }
+
+function renderCompUI() {
+  const l = document.getElementById('complist');
+  l.innerHTML = '';
+  comps.forEach((s, i) => {
+    const r = document.createElement('div');
+    r.className = 'list-row';
+    r.setAttribute('role', 'listitem');
+    r.style.gridTemplateColumns = '1fr 80px 50px 32px';
+    r.innerHTML = `
+      <input type="text"   value="${escAttr(s.l)}" oninput="comps[${i}].l=this.value;renderChart()" class="list-row-input" aria-label="Etiqueta segmento ${i+1}">
+      <input type="number" value="${s.n}" oninput="comps[${i}].n=parseInt(this.value)||0;renderChart()" class="list-row-input" aria-label="Cantidad segmento ${i+1}">
+      <input type="color"  value="${s.c}" oninput="comps[${i}].c=this.value;renderChart()" class="list-row-input" aria-label="Color segmento ${i+1}">
+      <button class="btn-icon" onclick="comps.splice(${i},1);renderCompUI();renderChart()" aria-label="Eliminar segmento ${escAttr(s.l)}">
+        <span aria-hidden="true">×</span>
+      </button>`;
+    l.appendChild(r);
+  });
+}
+function addComp() { comps.push({l:'Segmento',n:100,c:'#8891A4'}); renderCompUI(); renderChart(); focusLastInput('complist'); }
+
+function renderBarUI() {
+  const l = document.getElementById('barlist');
+  l.innerHTML = '';
+  bars.forEach((b, i) => {
+    const r = document.createElement('div');
+    r.className = 'list-row';
+    r.setAttribute('role', 'listitem');
+    r.style.gridTemplateColumns = '1fr 80px 32px';
+    r.innerHTML = `
+      <input type="text"   value="${escAttr(b.l)}" oninput="bars[${i}].l=this.value;renderChart()" class="list-row-input" aria-label="Etiqueta barra ${i+1}">
+      <input type="number" value="${b.p}" min="0" max="100" oninput="bars[${i}].p=parseFloat(this.value)||0;renderChart()" class="list-row-input" aria-label="Porcentaje barra ${i+1}">
+      <button class="btn-icon" onclick="bars.splice(${i},1);renderBarUI();renderChart()" aria-label="Eliminar barra ${escAttr(b.l)}">
+        <span aria-hidden="true">×</span>
+      </button>`;
+    l.appendChild(r);
+  });
+}
+function addBar() { bars.push({l:'Nueva barra',p:50}); renderBarUI(); renderChart(); focusLastInput('barlist'); }
+
+function renderFunUI() {
+  const l = document.getElementById('funlist');
+  l.innerHTML = '';
+  funs.forEach((s, i) => {
+    const r = document.createElement('div');
+    r.className = 'list-row';
+    r.setAttribute('role', 'listitem');
+    r.style.gridTemplateColumns = '1fr 80px 80px 32px';
+    r.innerHTML = `
+      <input type="text"   value="${escAttr(s.l)}" oninput="funs[${i}].l=this.value;renderChart()" class="list-row-input" aria-label="Etiqueta etapa ${i+1}">
+      <input type="number" value="${s.n}" oninput="funs[${i}].n=parseInt(this.value)||0;renderChart()" class="list-row-input" aria-label="n etapa ${i+1}">
+      <input type="text"   value="${escAttr(s.p)}" oninput="funs[${i}].p=this.value;renderChart()" class="list-row-input" placeholder="100%" aria-label="Porcentaje etapa ${i+1}">
+      <button class="btn-icon" onclick="funs.splice(${i},1);renderFunUI();renderChart()" aria-label="Eliminar etapa ${escAttr(s.l)}">
+        <span aria-hidden="true">×</span>
+      </button>`;
+    l.appendChild(r);
+  });
+}
+function addFun() { funs.push({l:'Etapa',n:0,p:'0%'}); renderFunUI(); renderChart(); focusLastInput('funlist'); }
+
+function renderAvUI() {
+  const l = document.getElementById('avlist');
+  l.innerHTML = '';
+  avs.forEach((s, i) => {
+    const r = document.createElement('div');
+    r.className = 'list-row';
+    r.setAttribute('role', 'listitem');
+    r.style.gridTemplateColumns = '1fr 70px 50px 32px';
+    r.innerHTML = `
+      <input type="text"   value="${escAttr(s.l)}" oninput="avs[${i}].l=this.value;renderChart()" class="list-row-input" aria-label="Etiqueta segmento avance ${i+1}">
+      <input type="number" value="${s.p}" min="0" max="100" oninput="avs[${i}].p=parseFloat(this.value)||0;renderChart()" class="list-row-input" aria-label="Porcentaje segmento avance ${i+1}">
+      <input type="color"  value="${s.c}" oninput="avs[${i}].c=this.value;renderChart()" class="list-row-input" aria-label="Color segmento avance ${i+1}">
+      <button class="btn-icon" onclick="avs.splice(${i},1);renderAvUI();renderChart()" aria-label="Eliminar segmento ${escAttr(s.l)}">
+        <span aria-hidden="true">×</span>
+      </button>`;
+    l.appendChild(r);
+  });
+}
+function addAv() { avs.push({l:'Segmento',p:20,c:'#8891A4'}); renderAvUI(); renderChart(); focusLastInput('avlist'); }
+
+/* ─── Dispatch ─────────────────────────────────────────────────── */
+async function renderChart() {
+  await document.fonts.load('600 12px Poppins');
+  if (tipo === 'nps' || tipo === 'linea') rLinea();
+  else if (tipo === 'ces')     rCES();
+  else if (tipo === 'isn')     rISN();
+  else if (tipo === 'barras')  rBarras();
+  else if (tipo === 'comp')    rComp();
+  else if (tipo === 'funnel')  rFunnel();
+  else if (tipo === 'avance')  rAvance();
+  saveState();
+}
+
+/* ─── Persistencia (localStorage) ──────────────────────────────── */
+const STORAGE_KEY = 'gdg_state_v1';
+const PERSIST_INPUTS = ['chart-title','kpi-meta-lbl','kpi-meta','kpi-sprom-lbl','kpi-sprom',
+  'k3lbl-input','kpi-web','kpi-wprom-lbl','kpi-wprom','mval','mlbl','show-meta','dtit','dp','dn','dd',
+  'dpl','dnl','ddl','ces-mval','ces-mlbl','isn-mval','isn-mlbl','isn-show-badge','barcol','fclbl','fcval','fcn','av-item'];
+
+function saveState() {
+  try {
+    const inputs = {};
+    PERSIST_INPUTS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) inputs[id] = (el.type === 'checkbox') ? el.checked : el.value;
+    });
+    const state = { tipo, titles, npspers, lineapers, cespers, isnpers, bars, comps, funs, avs, inputs };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) { /* almacenamiento no disponible — se ignora */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (!s || typeof s !== 'object') return false;
+    npspers  = Array.isArray(s.npspers)  ? s.npspers  : npspers;
+    lineapers= Array.isArray(s.lineapers)? s.lineapers: lineapers;
+    cespers  = Array.isArray(s.cespers)  ? s.cespers  : cespers;
+    isnpers  = Array.isArray(s.isnpers)  ? s.isnpers  : isnpers;
+    bars     = Array.isArray(s.bars)     ? s.bars     : bars;
+    comps    = Array.isArray(s.comps)    ? s.comps    : comps;
+    funs     = Array.isArray(s.funs)     ? s.funs     : funs;
+    avs      = Array.isArray(s.avs)      ? s.avs      : avs;
+    if (s.titles && typeof s.titles === 'object') titles = {...titles, ...s.titles};
+    if (s.inputs && typeof s.inputs === 'object') {
+      Object.entries(s.inputs).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.type === 'checkbox') el.checked = !!val; else el.value = val;
+      });
+    }
+    if (typeof s.tipo === 'string' && TIPOS.includes(s.tipo)) tipo = s.tipo;
+    return true;
+  } catch (e) { return false; }
+}
+
+function resetEjemplos() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  location.reload();
+}
+
+/* ─── Descarga PNG ──────────────────────────────────────────────── */
+function dlPNG() {
+  const el = document.getElementById('cw');
+  const btnBar = el.querySelector('.btn-bar');
+  if (btnBar) btnBar.style.display = 'none';
+
+  const capture = () => {
+    html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true, allowTaint: true, logging: false })
+    .then(c => {
+      if (btnBar) btnBar.style.display = 'flex';
+      const a = document.createElement('a');
+      a.download = 'grafico.png';
+      a.href = c.toDataURL('image/png');
+      a.click();
+      showToast('Imagen descargada correctamente');
+    }).catch(() => {
+      if (btnBar) btnBar.style.display = 'flex';
+      showToast('Error al generar la imagen');
+    });
+  };
+
+  if (window.html2canvas) { capture(); }
+  else {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = capture;
+    document.head.appendChild(s);
+  }
+}
+
+/* ─── Init ──────────────────────────────────────────────────────── */
+window.onload = async function() {
+  // Datos de ejemplo por defecto
+  bars    = [{l:'Etapa 1',p:94},{l:'Etapa 2',p:28},{l:'Etapa 3',p:38},{l:'Etapa 4',p:50}];
+  comps   = [{l:'Categoría A',n:1407,c:'#0063FF'},{l:'Categoría B',n:608,c:'#F5A623'},{l:'Categoría C',n:588,c:'#8891A4'},{l:'Categoría D',n:256,c:'#9455D2'}];
+  funs    = [{l:'Paso 1',n:633,p:'100%'},{l:'Paso 2',n:320,p:'50,6%'},{l:'Paso 3',n:294,p:'91,9%'},{l:'Paso 4',n:172,p:'58,5%'},{l:'Paso 5',n:88,p:'51,2%'}];
+  avs     = [{l:'Segmento A',p:64,c:'#5B9BD5'},{l:'Segmento B',p:36,c:'#002064'}];
+  cespers = DEF.ces.pers.map(p => ({...p}));
+  isnpers = DEF.isn.pers.map(p => ({...p}));
+  lineapers = DEF.linea.pers.map(p => ({...p}));
+  loadNPS(DEF.nps);                       // llena npspers + inputs NPS
+
+  // Restaura lo guardado (si existe) por encima de los defaults
+  loadState();
+
+  // Pinta todas las listas con los datos vigentes
+  renderBarUI();
+  renderCesUI();
+  renderIsnUI();
+  renderCompUI();
+  renderFunUI();
+  renderAvUI();
+
+  initTabKeyboard();
+  document.querySelectorAll('[role="tab"]').forEach((tab, i) => {
+    tab.setAttribute('tabindex', i === 0 ? '0' : '-1');
+  });
+
+  await document.fonts.load('600 12px Poppins');
+  prevTipo = tipo;        // evita pisar el título recordado al sincronizar
+  setTipo(tipo);          // aplica pestaña activa (restaurada o 'nps') + render
+};
+
+</script>
+</body>
+</html>
