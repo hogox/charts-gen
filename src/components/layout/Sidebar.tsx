@@ -99,12 +99,17 @@ export function Sidebar() {
           Tipo de gráfico
         </div>
         <Tabs value={tipo} onValueChange={(v) => setTipo(v as ChartType)}>
-          <TabsList className="grid h-auto w-full grid-cols-4 gap-1 bg-[#EEEFF2] p-[3px]" aria-labelledby="tipo-label">
+          <TabsList
+            className="w-full gap-[3px] rounded-lg bg-[#EEEFF2] p-[3px]"
+            style={{ display: 'flex', flexWrap: 'wrap', height: 'auto' }}
+            aria-labelledby="tipo-label"
+          >
             {TABS.map((t) => (
               <TabsTrigger
                 key={t.v}
                 value={t.v}
-                className="h-auto rounded-md px-2 py-[7px] text-[11px] leading-tight data-active:bg-white data-active:text-[#6D28D9] data-active:shadow-sm"
+                className="rounded-md px-2.5 py-[7px] text-[12px] leading-tight text-[#41464E] data-active:bg-white data-active:text-[#6D28D9] data-active:shadow-sm"
+                style={{ flex: '0 0 auto', height: 'auto', width: 'auto' }}
               >
                 {t.label}
               </TabsTrigger>
