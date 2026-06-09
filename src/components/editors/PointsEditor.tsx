@@ -1,7 +1,7 @@
-import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
 import { useChartStore } from '@/store/chartStore'
 import type { NpsConfig, LineaConfig } from '@/types/charts'
-import { AddButton, CellInput, ColumnHeaders, DeleteButton, Field, RowGrid, SectionLabel } from './_shared'
+import { AddButton, CellInput, ColumnHeaders, DeleteButton, Field, RowGrid, Section } from './_shared'
 
 const GRID = '1fr 80px 80px 32px'
 
@@ -18,10 +18,7 @@ export function PointsEditor({ variant }: { variant: 'nps' | 'linea' }) {
   const updateConfig = useChartStore((s) => s.updateConfig)
 
   return (
-    <fieldset className="border-0 p-0">
-      <SectionLabel>
-        <legend>Puntos de datos</legend>
-      </SectionLabel>
+    <Section title="Puntos de datos" description="Cada periodo de la línea de tendencia">
       <ColumnHeaders cols={GRID} labels={['Periodo', 'Valor', 'N° personas', '']} />
       <div role="list" aria-label="Lista de periodos">
         {points.map((p, i) => (
@@ -46,7 +43,7 @@ export function PointsEditor({ variant }: { variant: 'nps' | 'linea' }) {
       <AddButton onClick={() => addRow(listKey)} label="Agregar periodo" />
 
       <div className="mt-3 grid gap-2.5" style={{ gridTemplateColumns: '100px 1fr' }}>
-        <Field label="Meta (valor)">
+        <Field label="Meta (valor)" hint="Línea objetivo">
           <CellInput
             type="number"
             value={config.meta}
@@ -58,13 +55,13 @@ export function PointsEditor({ variant }: { variant: 'nps' | 'linea' }) {
         </Field>
       </div>
 
-      <label className="mt-2 flex cursor-pointer items-center gap-2 text-[11px] font-medium text-[#41464E]">
-        <Checkbox
+      <label className="mt-3 flex cursor-pointer items-center justify-between gap-2 text-[11px] font-medium text-[#41464E]">
+        Mostrar línea de meta
+        <Switch
           checked={config.showMeta}
           onCheckedChange={(c) => updateConfig(configKey, { showMeta: c === true })}
         />
-        Mostrar línea de meta
       </label>
-    </fieldset>
+    </Section>
   )
 }

@@ -1,5 +1,5 @@
 import { useChartStore } from '@/store/chartStore'
-import { AddButton, CellInput, ColorInput, ColumnHeaders, DeleteButton, FieldInput, RowGrid, SectionLabel } from './_shared'
+import { AddButton, CellInput, ColorInput, ColumnHeaders, DeleteButton, FieldInput, RowGrid, Section } from './_shared'
 
 const GRID = '1fr 70px 50px 32px'
 
@@ -12,10 +12,7 @@ export function AvanceEditor() {
   const updateConfig = useChartStore((s) => s.updateConfig)
 
   return (
-    <fieldset className="border-0 p-0">
-      <SectionLabel>
-        <legend>Barra de avance apilada</legend>
-      </SectionLabel>
+    <Section title="Barra de avance apilada" description="Segmentos apilados que suman el avance total">
       <div className="mb-3">
         <FieldInput label="Ítem medido" value={item} onChange={(v) => updateConfig('avanceConfig', { item: v })} />
       </div>
@@ -39,6 +36,6 @@ export function AvanceEditor() {
         ))}
       </div>
       <AddButton onClick={() => addRow('avs')} label="Agregar segmento" />
-    </fieldset>
+    </Section>
   )
 }

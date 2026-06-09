@@ -26,7 +26,7 @@ export function CesChart() {
 
   return (
     <div>
-      <ChartTitle title={title} />
+      <ChartTitle title={title} className="!mb-0" />
       <LineChartBase
         points={points}
         lineStroke="#0063FF"
@@ -37,6 +37,10 @@ export function CesChart() {
         yDomain={[0, yMax]}
         yTicks={ticksRange(0, yMax, 0.5)}
         yTickFormatter={(v) => formatCL(v, 1)}
+        showMeta={config.showMeta}
+        meta={mv}
+        metaLbl={config.metaLbl}
+        metaFormatter={(v) => formatCL(v, 2)}
       />
     </div>
   )

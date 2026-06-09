@@ -12,10 +12,10 @@ function KpiTile({ label, value, diff }: { label: string; value: string; diff?: 
       ? 'text-[#EB5454]'
       : 'text-[#060B25]'
   return (
-    <div className="rounded-[7px] border border-[#D6DFF0] bg-[#EDF1F9] px-3 py-2.5">
-      <div className="mb-0.5 text-xs text-[#6B7280]">{label}</div>
+    <div className="rounded-[7px] border border-[var(--kpi-border)] bg-[var(--kpi-bg)] px-3 py-2.5">
+      <div className="mb-1 text-xs text-[#6B7280]">{label}</div>
       <div className="text-[22px] font-semibold leading-none tracking-[-0.02em] text-[#060B25]">{value}</div>
-      {diff ? <div className={`mt-0.5 text-xs font-semibold ${diffColor}`}>{diff}</div> : null}
+      {diff ? <div className={`mt-1 text-xs font-semibold ${diffColor}`}>{diff}</div> : null}
     </div>
   )
 }
@@ -38,7 +38,7 @@ function DistributionBar({ c }: { c: NpsConfig }) {
   const pd = tot ? Math.round((c.detr / tot) * 100) : 0
 
   return (
-    <div>
+    <div className="mt-8">
       <div className="mb-2 text-sm font-semibold text-[#060B25]">{c.distTitle}</div>
       <div
         className="mb-2 flex h-10 overflow-hidden rounded-[7px]"
@@ -89,7 +89,7 @@ export function NpsChart() {
   return (
     <div>
       <KpiRow c={config} />
-      <ChartTitle title={title} />
+      <ChartTitle title={title} className="!mb-0" />
       <LineChartBase
         points={points}
         lineStroke="#0063FF"

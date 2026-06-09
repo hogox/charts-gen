@@ -51,8 +51,8 @@ export function ValueCard({ x, y, index, points, cardWidth, valueFormatter }: Va
           <circle cx={iconCx} cy={rowY - 3} r={2.5} fill="#6B7280" />
           <path d={`M ${iconCx - 4} ${rowY + 3} A 4 4 0 0 1 ${iconCx + 4} ${rowY + 3} Z`} fill="#6B7280" />
           <text
-            x={x + 3}
-            y={rowY + 1}
+            x={x + 6}
+            y={rowY + 3}
             textAnchor="middle"
             fontFamily="Poppins, sans-serif"
             fontWeight={400}

@@ -5,6 +5,7 @@ export type ChartType =
   | 'linea'
   | 'funnel'
   | 'comp'
+  | 'anillo'
   | 'barras'
   | 'avance'
 
@@ -15,13 +16,16 @@ export interface Point {
   n: number
 }
 
-/** Barra horizontal (Barras). p = porcentaje 0-100 */
+/** Barra (Barras). p = porcentaje 0-100 */
 export interface BarItem {
   l: string
   p: number
 }
 
-/** Segmento de composición. n = cantidad, c = color hex */
+/** Orientación del gráfico de barras. */
+export type BarOrientation = 'horizontal' | 'vertical'
+
+/** Segmento de composición / anillo. n = cantidad, c = color hex */
 export interface CompSeg {
   l: string
   n: number
@@ -72,6 +76,7 @@ export interface LineaConfig {
 export interface CesConfig {
   meta: number
   metaLbl: string
+  showMeta: boolean
 }
 
 export interface IsnConfig {
@@ -88,10 +93,15 @@ export interface FunnelConfig {
 
 export interface BarConfig {
   color: string
+  orientation: BarOrientation
 }
 
 export interface AvanceConfig {
   item: string
+}
+
+export interface AnilloConfig {
+  centerLabel: string
 }
 
 export interface ChartData {
@@ -103,6 +113,7 @@ export interface ChartData {
   isnPoints: Point[]
   bars: BarItem[]
   comps: CompSeg[]
+  rings: CompSeg[]
   funs: FunStep[]
   avs: AvSeg[]
   npsConfig: NpsConfig
@@ -112,4 +123,5 @@ export interface ChartData {
   funnelConfig: FunnelConfig
   barConfig: BarConfig
   avanceConfig: AvanceConfig
+  anilloConfig: AnilloConfig
 }

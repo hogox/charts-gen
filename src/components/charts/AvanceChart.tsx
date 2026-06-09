@@ -18,7 +18,7 @@ export function AvanceChart() {
 
   return (
     <div>
-      <ChartTitle title={title} />
+      <ChartTitle title={title} className="!mb-0" />
       <div className="pb-2 pt-4">
         <div className="mb-[18px] flex items-center gap-3.5">
           <div className="w-[110px] shrink-0 text-right text-xs font-medium text-[#41464E]">{item}</div>

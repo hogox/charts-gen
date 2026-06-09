@@ -1,5 +1,6 @@
+import { Switch } from '@/components/ui/switch'
 import { useChartStore } from '@/store/chartStore'
-import { AddButton, CellInput, ColumnHeaders, DeleteButton, Field, RowGrid, SectionLabel } from './_shared'
+import { AddButton, CellInput, ColumnHeaders, DeleteButton, Field, RowGrid, Section } from './_shared'
 
 const GRID = '1fr 80px 80px 32px'
 
@@ -12,10 +13,7 @@ export function CesEditor() {
   const updateConfig = useChartStore((s) => s.updateConfig)
 
   return (
-    <fieldset className="border-0 p-0">
-      <SectionLabel>
-        <legend>Puntos de datos CES</legend>
-      </SectionLabel>
+    <Section title="Puntos de datos CES" description="Evolución del esfuerzo del cliente por periodo">
       <ColumnHeaders cols={GRID} labels={['Periodo', 'Valor', 'N° personas', '']} />
       <div role="list" aria-label="Lista de periodos CES">
         {points.map((p, i) => (
@@ -53,6 +51,14 @@ export function CesEditor() {
           <CellInput value={config.metaLbl} onChange={(v) => updateConfig('cesConfig', { metaLbl: v })} />
         </Field>
       </div>
-    </fieldset>
+
+      <label className="mt-3 flex cursor-pointer items-center justify-between gap-2 text-[11px] font-medium text-[#41464E]">
+        Mostrar línea de meta
+        <Switch
+          checked={config.showMeta ?? false}
+          onCheckedChange={(c) => updateConfig('cesConfig', { showMeta: c === true })}
+        />
+      </label>
+    </Section>
   )
 }

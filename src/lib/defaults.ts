@@ -1,4 +1,5 @@
 import type { ChartData, ChartType } from '@/types/charts'
+import { seriesColor } from '@/lib/colors'
 
 /** Títulos por defecto recordados por tipo de gráfico (del original `titles`). */
 export const DEFAULT_TITLES: Record<ChartType, string> = {
@@ -8,6 +9,7 @@ export const DEFAULT_TITLES: Record<ChartType, string> = {
   isn: 'Evolución ISN',
   funnel: '',
   comp: '',
+  anillo: '',
   barras: '',
   avance: '',
 }
@@ -49,10 +51,16 @@ export function getDefaultData(): ChartData {
       { l: 'Etapa 4', p: 50 },
     ],
     comps: [
-      { l: 'Categoría A', n: 1407, c: '#0063FF' },
-      { l: 'Categoría B', n: 608, c: '#F5A623' },
-      { l: 'Categoría C', n: 588, c: '#8891A4' },
-      { l: 'Categoría D', n: 256, c: '#9455D2' },
+      { l: 'Categoría A', n: 1407, c: seriesColor(0) },
+      { l: 'Categoría B', n: 608, c: seriesColor(1) },
+      { l: 'Categoría C', n: 588, c: seriesColor(2) },
+      { l: 'Categoría D', n: 256, c: seriesColor(3) },
+    ],
+    rings: [
+      { l: 'Categoría A', n: 1407, c: seriesColor(0) },
+      { l: 'Categoría B', n: 608, c: seriesColor(1) },
+      { l: 'Categoría C', n: 588, c: seriesColor(2) },
+      { l: 'Categoría D', n: 256, c: seriesColor(3) },
     ],
     funs: [
       { l: 'Paso 1', n: 633, p: '100%' },
@@ -62,8 +70,8 @@ export function getDefaultData(): ChartData {
       { l: 'Paso 5', n: 88, p: '51,2%' },
     ],
     avs: [
-      { l: 'Segmento A', p: 64, c: '#5B9BD5' },
-      { l: 'Segmento B', p: 36, c: '#002064' },
+      { l: 'Segmento A', p: 64, c: seriesColor(0) },
+      { l: 'Segmento B', p: 36, c: seriesColor(1) },
     ],
     npsConfig: {
       meta: 30,
@@ -93,6 +101,7 @@ export function getDefaultData(): ChartData {
     cesConfig: {
       meta: 2.05,
       metaLbl: 'Meta CES 2026',
+      showMeta: false,
     },
     isnConfig: {
       meta: 58,
@@ -106,9 +115,13 @@ export function getDefaultData(): ChartData {
     },
     barConfig: {
       color: '#0063FF',
+      orientation: 'horizontal',
     },
     avanceConfig: {
       item: 'Ítem',
+    },
+    anilloConfig: {
+      centerLabel: 'Total',
     },
   }
 }

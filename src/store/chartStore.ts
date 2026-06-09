@@ -10,12 +10,13 @@ import type {
   Point,
 } from '@/types/charts'
 import { getDefaultData } from '@/lib/defaults'
+import { seriesColor } from '@/lib/colors'
 import { importLegacy } from '@/lib/migrate'
 
 const STORAGE_KEY = 'gdg-charts'
 
 /** Claves de arrays editables en el store. */
-type ListKey = 'npsPoints' | 'lineaPoints' | 'cesPoints' | 'isnPoints' | 'bars' | 'comps' | 'funs' | 'avs'
+type ListKey = 'npsPoints' | 'lineaPoints' | 'cesPoints' | 'isnPoints' | 'bars' | 'comps' | 'rings' | 'funs' | 'avs'
 /** Claves de objetos de configuración. */
 type ConfigKey =
   | 'npsConfig'
@@ -25,6 +26,7 @@ type ConfigKey =
   | 'funnelConfig'
   | 'barConfig'
   | 'avanceConfig'
+  | 'anilloConfig'
 
 /** Item nuevo por defecto al agregar una fila (mirror de addPer/addCes/... del original). */
 const NEW_ROW: Record<ListKey, Point | BarItem | CompSeg | FunStep | AvSeg> = {
@@ -33,9 +35,10 @@ const NEW_ROW: Record<ListKey, Point | BarItem | CompSeg | FunStep | AvSeg> = {
   cesPoints: { l: 'Nuevo', v: 0, n: 0 },
   isnPoints: { l: 'Nuevo', v: 0, n: 0 },
   bars: { l: 'Nueva barra', p: 50 },
-  comps: { l: 'Segmento', n: 100, c: '#8891A4' },
+  comps: { l: 'Segmento', n: 100, c: seriesColor(0) },
+  rings: { l: 'Segmento', n: 100, c: seriesColor(0) },
   funs: { l: 'Etapa', n: 0, p: '0%' },
-  avs: { l: 'Segmento', p: 20, c: '#8891A4' },
+  avs: { l: 'Segmento', p: 20, c: seriesColor(0) },
 }
 
 export interface ChartStore extends ChartData {
@@ -74,7 +77,14 @@ export const useChartStore = create<ChartStore>()(
         set((s) => ({ [key]: { ...s[key], ...patch } }) as Partial<ChartStore>),
 
       addRow: (key) =>
-        set((s) => ({ [key]: [...s[key], { ...NEW_ROW[key] }] }) as Partial<ChartStore>),
+        set((s) => {
+          const next = { ...NEW_ROW[key] }
+          // Composición, Anillo y Avance: el nuevo segmento toma el siguiente color de la paleta.
+          if (key === 'comps' || key === 'rings' || key === 'avs') {
+            ;(next as CompSeg | AvSeg).c = seriesColor(s[key].length)
+          }
+          return { [key]: [...s[key], next] } as Partial<ChartStore>
+        }),
 
       removeRow: (key, index) =>
         set((s) => ({ [key]: s[key].filter((_, i) => i !== index) }) as Partial<ChartStore>),

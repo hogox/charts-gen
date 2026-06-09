@@ -2,7 +2,7 @@ import type { ChartData, ChartType } from '@/types/charts'
 import { getDefaultData } from '@/lib/defaults'
 
 const LEGACY_KEY = 'gdg_state_v1'
-const TIPOS: ChartType[] = ['nps', 'ces', 'isn', 'linea', 'funnel', 'comp', 'barras', 'avance']
+const TIPOS: ChartType[] = ['nps', 'ces', 'isn', 'linea', 'funnel', 'comp', 'anillo', 'barras', 'avance']
 
 const num = (v: unknown, fallback: number) => {
   const n = parseFloat(String(v))
@@ -36,6 +36,7 @@ export function importLegacy(): ChartData | null {
       isnPoints: arr(s.isnpers, d.isnPoints),
       bars: arr(s.bars, d.bars),
       comps: arr(s.comps, d.comps),
+      rings: arr(s.rings, d.rings),
       funs: arr(s.funs, d.funs),
       avs: arr(s.avs, d.avs),
       npsConfig: {
@@ -66,6 +67,7 @@ export function importLegacy(): ChartData | null {
       cesConfig: {
         meta: num(inp['ces-mval'], d.cesConfig.meta),
         metaLbl: str(inp['ces-mlbl'], d.cesConfig.metaLbl),
+        showMeta: d.cesConfig.showMeta,
       },
       isnConfig: {
         meta: num(inp['isn-mval'], d.isnConfig.meta),
@@ -79,9 +81,13 @@ export function importLegacy(): ChartData | null {
       },
       barConfig: {
         color: str(inp['barcol'], d.barConfig.color),
+        orientation: d.barConfig.orientation,
       },
       avanceConfig: {
         item: str(inp['av-item'], d.avanceConfig.item),
+      },
+      anilloConfig: {
+        centerLabel: str(inp['anillo-center'], d.anilloConfig.centerLabel),
       },
     }
   } catch {

@@ -1,5 +1,5 @@
 import { useChartStore } from '@/store/chartStore'
-import { AddButton, CellInput, ColorInput, ColumnHeaders, DeleteButton, RowGrid, SectionLabel } from './_shared'
+import { AddButton, CellInput, ColorInput, ColumnHeaders, DeleteButton, RowGrid, Section } from './_shared'
 
 const GRID = '1fr 80px 50px 32px'
 
@@ -10,10 +10,7 @@ export function CompEditor() {
   const updateRow = useChartStore((s) => s.updateRow)
 
   return (
-    <fieldset className="border-0 p-0">
-      <SectionLabel>
-        <legend>Segmentos</legend>
-      </SectionLabel>
+    <Section title="Segmentos" description="Categorías que componen el total">
       <ColumnHeaders cols={GRID} labels={['Etiqueta', 'n', 'Color', '']} />
       <div role="list" aria-label="Lista de segmentos">
         {comps.map((s, i) => (
@@ -32,6 +29,6 @@ export function CompEditor() {
         ))}
       </div>
       <AddButton onClick={() => addRow('comps')} label="Agregar segmento" />
-    </fieldset>
+    </Section>
   )
 }

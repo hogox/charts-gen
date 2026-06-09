@@ -19,7 +19,7 @@ export function LineaChart() {
 
   return (
     <div>
-      <ChartTitle title={title} />
+      <ChartTitle title={title} className="!mb-0" />
       <LineChartBase
         points={points}
         lineStroke="#0063FF"

@@ -34,6 +34,8 @@ export interface LineChartBaseProps {
   showMeta?: boolean
   meta?: number
   metaLbl?: string
+  /** Formatea el valor de la meta en su etiqueta. Por defecto añade `%`. */
+  metaFormatter?: (v: number) => string
   showZeroLine?: boolean
   rightMargin?: number
   /** Stops para colorear el trazo (CES rojo/azul). */
@@ -52,6 +54,7 @@ export function LineChartBase({
   showMeta,
   meta,
   metaLbl,
+  metaFormatter = (v) => `${v}%`,
   showZeroLine,
   rightMargin = 20,
   lineGradientStops,
@@ -114,7 +117,7 @@ export function LineChartBase({
             strokeDasharray="6 4"
             strokeWidth={1.5}
             label={{
-              value: `${metaLbl} · ${meta}%`,
+              value: `${metaLbl} · ${metaFormatter(meta)}`,
               position: 'insideTopLeft',
               fill: '#9455D2',
               fontSize: 11,

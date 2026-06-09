@@ -1,5 +1,5 @@
-import { toast } from 'sonner'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { cn } from '@/lib/utils'
+import { CHART_TYPES } from '@/lib/chartMeta'
 import { useChartStore } from '@/store/chartStore'
 import type { ChartType } from '@/types/charts'
 import { TitleEditor } from '@/components/editors/TitleEditor'
@@ -9,28 +9,18 @@ import { DistributionEditor } from '@/components/editors/DistributionEditor'
 import { CesEditor } from '@/components/editors/CesEditor'
 import { IsnEditor } from '@/components/editors/IsnEditor'
 import { CompEditor } from '@/components/editors/CompEditor'
+import { AnilloEditor } from '@/components/editors/AnilloEditor'
 import { BarEditor } from '@/components/editors/BarEditor'
 import { FunnelEditor } from '@/components/editors/FunnelEditor'
 import { AvanceEditor } from '@/components/editors/AvanceEditor'
-
-const TABS: { v: ChartType; label: string }[] = [
-  { v: 'nps', label: 'NPS línea' },
-  { v: 'ces', label: 'CES' },
-  { v: 'isn', label: 'ISN' },
-  { v: 'linea', label: 'Línea simple' },
-  { v: 'funnel', label: 'Funnel' },
-  { v: 'comp', label: 'Composición' },
-  { v: 'barras', label: 'Barras' },
-  { v: 'avance', label: 'Avance' },
-]
 
 function Editors({ tipo }: { tipo: ChartType }) {
   switch (tipo) {
     case 'nps':
       return (
         <>
-          <TitleEditor />
           <KpiEditor />
+          <TitleEditor />
           <PointsEditor variant="nps" />
           <DistributionEditor />
         </>
@@ -63,6 +53,13 @@ function Editors({ tipo }: { tipo: ChartType }) {
           <CompEditor />
         </>
       )
+    case 'anillo':
+      return (
+        <>
+          <TitleEditor />
+          <AnilloEditor />
+        </>
+      )
     case 'barras':
       return (
         <>
@@ -90,7 +87,6 @@ function Editors({ tipo }: { tipo: ChartType }) {
 export function Sidebar() {
   const tipo = useChartStore((s) => s.tipo)
   const setTipo = useChartStore((s) => s.setTipo)
-  const reset = useChartStore((s) => s.reset)
 
   return (
     <aside className="flex flex-col gap-5 overflow-y-auto border-r border-[#DCDDE3] bg-white p-5" aria-label="Configuración del gráfico">
@@ -98,35 +94,29 @@ export function Sidebar() {
         <div className="text-sm font-semibold text-[#060B25]" id="tipo-label">
           Tipo de gráfico
         </div>
-        <Tabs value={tipo} onValueChange={(v) => setTipo(v as ChartType)}>
-          <TabsList
-            className="w-full gap-[3px] rounded-lg bg-[#EEEFF2] p-[3px]"
-            style={{ display: 'flex', flexWrap: 'wrap', height: 'auto' }}
-            aria-labelledby="tipo-label"
-          >
-            {TABS.map((t) => (
-              <TabsTrigger
-                key={t.v}
-                value={t.v}
-                className="rounded-md px-2.5 py-[7px] text-[12px] leading-tight text-[#41464E] data-active:bg-white data-active:text-[#6D28D9] data-active:shadow-sm"
-                style={{ flex: '0 0 auto', height: 'auto', width: 'auto' }}
+        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="tipo-label">
+          {CHART_TYPES.map(({ v, label, Icon }) => {
+            const active = v === tipo
+            return (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setTipo(v)}
+                className={cn(
+                  'flex items-center gap-2 rounded-lg border px-3 py-2.5 text-[12px] font-medium transition-colors',
+                  active
+                    ? 'border-[#6D28D9] bg-[rgba(109,40,217,.06)] text-[#6D28D9]'
+                    : 'border-[#E4E5EA] bg-white text-[#41464E] hover:border-[#C0BCC9] hover:bg-[#F7F7F9]',
+                )}
               >
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-        <button
-          type="button"
-          onClick={() => {
-            reset()
-            toast('Datos de ejemplo restablecidos')
-          }}
-          className="self-start rounded px-1.5 py-1 text-[10px] text-[#6B7280] transition-colors hover:bg-[rgba(109,40,217,.08)] hover:text-[#6D28D9]"
-          aria-label="Restablecer datos de ejemplo"
-        >
-          ↺ Restablecer ejemplos
-        </button>
+                <Icon className="size-4 shrink-0" aria-hidden="true" />
+                {label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <Editors tipo={tipo} />

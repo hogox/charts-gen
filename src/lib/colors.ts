@@ -23,3 +23,19 @@ export const AREA_GRADIENT = {
   from: 'rgba(148,170,255,.35)',
   to: 'rgba(148,170,255,.02)',
 } as const
+
+/**
+ * Paleta ordenada para series multi-segmento (Composición y Avance),
+ * derivada de los colores que ya usan los demás gráficos (NPS, Barras, distribución).
+ */
+export const SERIES_COLORS = [
+  COLORS.blue, // #0063FF
+  COLORS.navy, // #002064
+  COLORS.purple, // #9455D2
+  COLORS.red, // #EB5454
+] as const
+
+/** Color de serie por índice (cicla si hay más segmentos que colores en la paleta). */
+export function seriesColor(i: number): string {
+  return SERIES_COLORS[i % SERIES_COLORS.length]
+}

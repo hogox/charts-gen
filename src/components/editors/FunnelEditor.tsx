@@ -1,5 +1,5 @@
 import { useChartStore } from '@/store/chartStore'
-import { AddButton, CellInput, ColumnHeaders, DeleteButton, FieldInput, RowGrid, SectionLabel } from './_shared'
+import { AddButton, CellInput, ColumnHeaders, DeleteButton, FieldInput, RowGrid, Section } from './_shared'
 
 const GRID = '1fr 80px 80px 32px'
 
@@ -12,10 +12,7 @@ export function FunnelEditor() {
   const updateConfig = useChartStore((s) => s.updateConfig)
 
   return (
-    <fieldset className="border-0 p-0">
-      <SectionLabel>
-        <legend>Pasos del funnel</legend>
-      </SectionLabel>
+    <Section title="Pasos del funnel" description="Etapas de conversión, de mayor a menor">
       <ColumnHeaders cols={GRID} labels={['Etapa', 'n', '%', '']} />
       <div role="list" aria-label="Lista de etapas del funnel">
         {funs.map((s, i) => (
@@ -45,6 +42,6 @@ export function FunnelEditor() {
         <FieldInput label="Valor conversión" value={config.convVal} onChange={(v) => updateConfig('funnelConfig', { convVal: v })} />
         <FieldInput label="Número de usuarios" value={config.convN} onChange={(v) => updateConfig('funnelConfig', { convN: v })} />
       </div>
-    </fieldset>
+    </Section>
   )
 }

@@ -1,9 +1,45 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-/** Etiqueta de sección (.slbl del original). */
-export function SectionLabel({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn('text-sm font-semibold text-[#060B25] mb-0.5', className)}>{children}</div>
+/** Sección colapsable con título, descripción opcional y divisor superior. */
+export function Section({
+  title,
+  description,
+  defaultOpen = true,
+  children,
+}: {
+  title: string
+  description?: string
+  defaultOpen?: boolean
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <section className="border-t border-[#ECEDF1] pt-5">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="group flex w-full items-start justify-between gap-2 text-left"
+      >
+        <span className="flex flex-col">
+          <span className="text-sm font-semibold text-[#060B25]">{title}</span>
+          {description ? (
+            <span className="mt-0.5 text-[11px] font-normal leading-snug text-[#6B7280]">{description}</span>
+          ) : null}
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          className={cn(
+            'mt-0.5 size-4 shrink-0 text-[#9096A2] transition-transform group-hover:text-[#6D28D9]',
+            open ? '' : '-rotate-90',
+          )}
+        />
+      </button>
+      {open ? <div className="mt-3">{children}</div> : null}
+    </section>
+  )
 }
 
 /** Encabezado de columnas de una tabla de filas. */
@@ -73,14 +109,25 @@ export function ColorInput({ value, onChange, ariaLabel }: { value: string; onCh
   )
 }
 
-/** Campo con etiqueta arriba (.fg). */
-export function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: ReactNode }) {
+/** Campo con etiqueta arriba (.fg) y texto de ayuda opcional. */
+export function Field({
+  label,
+  htmlFor,
+  hint,
+  children,
+}: {
+  label: string
+  htmlFor?: string
+  hint?: string
+  children: ReactNode
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={htmlFor} className="text-[11px] font-medium text-[#41464E]">
         {label}
       </label>
       {children}
+      {hint ? <span className="text-[10px] leading-snug text-[#9096A2]">{hint}</span> : null}
     </div>
   )
 }

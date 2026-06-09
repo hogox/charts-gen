@@ -1,6 +1,6 @@
 import { useChartStore } from '@/store/chartStore'
 import type { NpsConfig } from '@/types/charts'
-import { CellInput, Field, SectionLabel } from './_shared'
+import { CellInput, Field, Section } from './_shared'
 
 const ROWS: { label: string; color: string; numKey: keyof NpsConfig; lblKey: keyof NpsConfig }[] = [
   { label: 'Promotores', color: '#002064', numKey: 'prom', lblKey: 'promLbl' },
@@ -14,10 +14,7 @@ export function DistributionEditor() {
   const set = (patch: Partial<NpsConfig>) => updateConfig('npsConfig', patch)
 
   return (
-    <fieldset className="border-0 p-0">
-      <SectionLabel>
-        <legend>Distribución NPS</legend>
-      </SectionLabel>
+    <Section title="Distribución NPS" description="Promotores, neutros y detractores">
       <div className="mb-2.5">
         <Field label="Título">
           <CellInput value={config.distTitle} onChange={(v) => set({ distTitle: v })} />
@@ -44,6 +41,6 @@ export function DistributionEditor() {
           </div>
         ))}
       </div>
-    </fieldset>
+    </Section>
   )
 }
