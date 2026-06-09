@@ -35,7 +35,7 @@ function App() {
   return (
     <>
       <AppHeader onDownload={downloadPNG} busy={busy} />
-      <div className="grid min-h-[calc(100vh-57px)] grid-cols-1 min-[900px]:grid-cols-[420px_1fr]">
+      <div className="grid min-h-[calc(100vh-57px)] grid-cols-1 min-[900px]:h-[calc(100vh-57px)] min-[900px]:min-h-0 min-[900px]:grid-cols-[460px_1fr] min-[1280px]:grid-cols-[520px_1fr] min-[900px]:overflow-hidden">
         <Sidebar />
         <PreviewPanel cardRef={cardRef} />
       </div>

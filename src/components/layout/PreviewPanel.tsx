@@ -36,7 +36,7 @@ function ChartView() {
 
 export function PreviewPanel({ cardRef }: { cardRef: RefObject<HTMLDivElement | null> }) {
   return (
-    <main className="flex flex-col items-center gap-3 overflow-y-auto bg-[#F4F6FB] p-6" aria-label="Vista previa del gráfico">
+    <main className="flex min-h-0 flex-col items-center gap-3 overflow-y-auto bg-[#F4F6FB] p-6" aria-label="Vista previa del gráfico">
       <div className="self-center text-sm font-semibold text-[#060B25]" aria-hidden="true">
         Vista previa
       </div>

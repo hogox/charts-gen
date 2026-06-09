@@ -1,6 +1,6 @@
 import { useChartStore } from '@/store/chartStore'
 import { ticksRange } from '@/lib/scale'
-import { diffLine } from '@/lib/format'
+import { diffLine, parseNum } from '@/lib/format'
 import type { NpsConfig } from '@/types/charts'
 import { ChartTitle } from './EmptyState'
 import { LineChartBase } from './LineChartBase'
@@ -79,7 +79,9 @@ export function NpsChart() {
   const title = useChartStore((s) => s.titles.nps)
 
   const vals = points.map((p) => p.v)
-  const mv = config.meta
+  // La meta del gráfico siempre proviene del primer KPI card (Meta).
+  const metaNum = parseNum(config.kpiMeta)
+  const mv = Number.isNaN(metaNum) ? 0 : metaNum
   const minV = Math.min(...vals, 0)
   const maxV = Math.max(...vals, mv, 0)
   const pad = Math.max(Math.abs(maxV - minV) * 0.2, 10)
@@ -100,8 +102,8 @@ export function NpsChart() {
         yTicks={ticksRange(yMin, yMax, 10)}
         yTickFormatter={(v) => `${v}%`}
         showMeta={config.showMeta}
-        meta={mv}
-        metaLbl={config.metaLbl}
+        meta={Number.isNaN(metaNum) ? undefined : mv}
+        metaLbl={config.kpiMetaLbl}
         showZeroLine={yMin < 0}
       />
       <DistributionBar c={config} />

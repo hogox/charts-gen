@@ -90,12 +90,12 @@ export function Sidebar() {
   const setTipo = useChartStore((s) => s.setTipo)
 
   return (
-    <aside className="flex flex-col gap-5 overflow-y-auto border-r border-[#DCDDE3] bg-white p-5" aria-label="Configuración del gráfico">
+    <aside className="flex min-h-0 flex-col gap-5 overflow-y-auto border-r border-[#DCDDE3] bg-white p-5" aria-label="Configuración del gráfico">
       <div className="flex flex-col gap-2.5">
         <div className="text-sm font-semibold text-[#060B25]" id="tipo-label">
           Tipo de gráfico
         </div>
-        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-labelledby="tipo-label">
+        <div className="grid grid-cols-2 gap-2 min-[1280px]:grid-cols-3" role="radiogroup" aria-labelledby="tipo-label">
           {CHART_TYPES.map(({ v, label, Icon }) => {
             const active = v === tipo
             return (

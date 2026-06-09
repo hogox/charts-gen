@@ -42,18 +42,20 @@ export function PointsEditor({ variant }: { variant: 'nps' | 'linea' }) {
       </div>
       <AddButton onClick={() => addRow(listKey)} label="Agregar periodo" />
 
-      <div className="mt-3 grid gap-2.5" style={{ gridTemplateColumns: '100px 1fr' }}>
-        <Field label="Meta (valor)" hint="Línea objetivo">
-          <CellInput
-            type="number"
-            value={config.meta}
-            onChange={(v) => updateConfig(configKey, { meta: parseFloat(v) || 0 })}
-          />
-        </Field>
-        <Field label="Etiqueta meta">
-          <CellInput value={config.metaLbl} onChange={(v) => updateConfig(configKey, { metaLbl: v })} />
-        </Field>
-      </div>
+      {variant === 'linea' ? (
+        <div className="mt-3 grid gap-2.5" style={{ gridTemplateColumns: '100px 1fr' }}>
+          <Field label="Meta (valor)" hint="Línea objetivo">
+            <CellInput
+              type="number"
+              value={config.meta}
+              onChange={(v) => updateConfig(configKey, { meta: parseFloat(v) || 0 })}
+            />
+          </Field>
+          <Field label="Etiqueta meta">
+            <CellInput value={config.metaLbl} onChange={(v) => updateConfig(configKey, { metaLbl: v })} />
+          </Field>
+        </div>
+      ) : null}
 
       <label className="mt-3 flex cursor-pointer items-center justify-between gap-2 text-[11px] font-medium text-[#41464E]">
         Mostrar línea de meta
@@ -62,6 +64,11 @@ export function PointsEditor({ variant }: { variant: 'nps' | 'linea' }) {
           onCheckedChange={(c) => updateConfig(configKey, { showMeta: c === true })}
         />
       </label>
+      {variant === 'nps' ? (
+        <p className="mt-1.5 text-[10px] leading-snug text-[#9096A2]">
+          La meta usa el valor y la etiqueta del primer KPI (Meta).
+        </p>
+      ) : null}
     </Section>
   )
 }
