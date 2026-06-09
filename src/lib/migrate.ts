@@ -75,6 +75,8 @@ export function importLegacy(): ChartData | null {
         showMeta: inp['isn-show-badge'] === undefined ? d.isnConfig.showMeta : !!inp['isn-show-badge'],
       },
       funnelConfig: {
+        insightTitle: str(inp['f-ititle'], d.funnelConfig.insightTitle),
+        insightDesc: str(inp['f-idesc'], d.funnelConfig.insightDesc),
         convLbl: str(inp['fclbl'], d.funnelConfig.convLbl),
         convVal: str(inp['fcval'], d.funnelConfig.convVal),
         convN: str(inp['fcn'], d.funnelConfig.convN),

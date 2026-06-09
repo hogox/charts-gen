@@ -11,7 +11,7 @@ import { IsnEditor } from '@/components/editors/IsnEditor'
 import { CompEditor } from '@/components/editors/CompEditor'
 import { AnilloEditor } from '@/components/editors/AnilloEditor'
 import { BarEditor } from '@/components/editors/BarEditor'
-import { FunnelEditor } from '@/components/editors/FunnelEditor'
+import { FunnelEditor, FunnelInsightEditor } from '@/components/editors/FunnelEditor'
 import { AvanceEditor } from '@/components/editors/AvanceEditor'
 
 function Editors({ tipo }: { tipo: ChartType }) {
@@ -71,6 +71,7 @@ function Editors({ tipo }: { tipo: ChartType }) {
       return (
         <>
           <TitleEditor />
+          <FunnelInsightEditor />
           <FunnelEditor />
         </>
       )

@@ -86,6 +86,8 @@ export interface IsnConfig {
 }
 
 export interface FunnelConfig {
+  insightTitle: string
+  insightDesc: string
   convLbl: string
   convVal: string
   convN: string

@@ -27,6 +27,16 @@ export function FunnelChart() {
   return (
     <div className="py-1">
       <ChartTitle title={title} />
+      {(config.insightTitle || config.insightDesc) && (
+        <div className="mb-4 rounded-[8px] bg-[#F4F6FB] px-3.5 py-3">
+          {config.insightTitle && (
+            <div className="text-[13px] font-semibold leading-snug text-[#060B25]">{config.insightTitle}</div>
+          )}
+          {config.insightDesc && (
+            <div className="mt-1 text-[11px] text-[#6B7280]">{config.insightDesc}</div>
+          )}
+        </div>
+      )}
       {funs.map((s, i) => {
         const w = widths[i]
         const prevW = i === 0 ? w : widths[i - 1]
@@ -62,7 +72,7 @@ export function FunnelChart() {
         )
       })}
       <div className="mt-[13px] flex items-center justify-between border-t border-[#EDF1F9] pt-[13px]">
-        <div className="text-xs font-medium text-[#41464E]">{config.convLbl}</div>
+        <div className="text-[13px] font-semibold text-[#41464E]">{config.convLbl}</div>
         <div className="text-right">
           <div className="text-[17px] font-bold text-[#0F7B3F]">{config.convVal}</div>
           <div className="text-[10px] text-[#6B7280]">{config.convN}</div>

@@ -41,32 +41,32 @@ function DistributionBar({ c }: { c: NpsConfig }) {
     <div className="mt-8">
       <div className="mb-2 text-sm font-semibold text-[#060B25]">{c.distTitle}</div>
       <div
-        className="mb-2 flex h-10 overflow-hidden rounded-[7px]"
+        className="mb-2 flex h-5 overflow-hidden rounded-[7px]"
         role="img"
         aria-label={`Distribución: Detractores ${pd}%, Neutros ${pn}%, Promotores ${pp}%`}
       >
-        <div className="flex min-w-[24px] items-center justify-center text-xs font-semibold text-white" style={{ width: `${pd}%`, background: '#9455D2' }}>
+        <div className="flex min-w-[24px] items-center justify-center text-xs font-semibold text-white" style={{ width: `${pd}%`, background: '#EB5454' }}>
           {pd}%
         </div>
-        <div className="flex min-w-[24px] items-center justify-center text-xs font-semibold text-white" style={{ width: `${pn}%`, background: '#0063FF' }}>
+        <div className="flex min-w-[24px] items-center justify-center text-xs font-semibold text-white" style={{ width: `${pn}%`, background: '#002168' }}>
           {pn}%
         </div>
-        <div className="flex min-w-[24px] items-center justify-center text-[13px] font-semibold text-white" style={{ width: `${pp}%`, background: '#002064' }}>
-          {pp > 18 ? `Promotores ${pp}%` : `${pp}%`}
+        <div className="flex min-w-[24px] items-center justify-center text-xs font-semibold text-white" style={{ width: `${pp}%`, background: '#0064FF' }}>
+          {pp}%
         </div>
       </div>
       <div className="flex flex-wrap gap-3">
         <div className="flex items-center gap-1.5 text-xs text-[#41464E]">
-          <span className="h-2 w-2 rounded-full bg-[#9455D2]" aria-hidden="true" />
-          Detractores — {c.detrLbl}
+          <span className="h-2 w-2 rounded-full bg-[#EB5454]" aria-hidden="true" />
+          Detractores: {c.detrLbl}
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-[#002168]">
+          <span className="h-2 w-2 rounded-full bg-[#002168]" aria-hidden="true" />
+          Neutros: {c.neutLbl}
         </div>
         <div className="flex items-center gap-1.5 text-xs text-[#41464E]">
-          <span className="h-2 w-2 rounded-full bg-[#0063FF]" aria-hidden="true" />
-          Neutros — {c.neutLbl}
-        </div>
-        <div className="flex items-center gap-1.5 text-xs text-[#41464E]">
-          <span className="h-2 w-2 rounded-full bg-[#002064]" aria-hidden="true" />
-          Promotores — {c.promLbl}
+          <span className="h-2 w-2 rounded-full bg-[#0064FF]" aria-hidden="true" />
+          Promotores: {c.promLbl}
         </div>
       </div>
     </div>

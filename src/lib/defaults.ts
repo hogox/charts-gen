@@ -109,6 +109,8 @@ export function getDefaultData(): ChartData {
       showMeta: true,
     },
     funnelConfig: {
+      insightTitle: '72% de los usuarios no avanzan de la primera pantalla',
+      insightDesc: 'Esto corresponde a 1.000 usuarios',
       convLbl: 'Conversión total',
       convVal: '13,9%',
       convN: '88 usuarios',

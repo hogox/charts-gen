@@ -3,6 +3,20 @@ import { AddButton, CellInput, ColumnHeaders, DeleteButton, FieldInput, RowGrid,
 
 const GRID = '1fr 80px 80px 32px'
 
+export function FunnelInsightEditor() {
+  const config = useChartStore((s) => s.funnelConfig)
+  const updateConfig = useChartStore((s) => s.updateConfig)
+
+  return (
+    <Section title="Insight" description="Título y descripción destacados sobre el funnel">
+      <div className="flex flex-col gap-2">
+        <FieldInput label="Título" value={config.insightTitle} onChange={(v) => updateConfig('funnelConfig', { insightTitle: v })} />
+        <FieldInput label="Descripción" value={config.insightDesc} onChange={(v) => updateConfig('funnelConfig', { insightDesc: v })} />
+      </div>
+    </Section>
+  )
+}
+
 export function FunnelEditor() {
   const funs = useChartStore((s) => s.funs)
   const config = useChartStore((s) => s.funnelConfig)
