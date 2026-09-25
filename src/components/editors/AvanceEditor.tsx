@@ -24,8 +24,6 @@ export function AvanceEditor() {
             <CellInput
               size="xs"
               type="number"
-              min={0}
-              max={100}
               value={s.p}
               ariaLabel={`Porcentaje segmento avance ${i + 1}`}
               onChange={(v) => updateRow('avs', i, { p: parseFloat(v) || 0 })}

@@ -3,6 +3,7 @@ import { useChartStore } from '@/store/chartStore'
 import { NpsChart } from '@/components/charts/NpsChart'
 import { CesChart } from '@/components/charts/CesChart'
 import { IsnChart } from '@/components/charts/IsnChart'
+import { CesIsnChart } from '@/components/charts/CesIsnChart'
 import { LineaChart } from '@/components/charts/LineaChart'
 import { FunnelChart } from '@/components/charts/FunnelChart'
 import { CompChart } from '@/components/charts/CompChart'
@@ -19,6 +20,8 @@ function ChartView() {
       return <CesChart />
     case 'isn':
       return <IsnChart />
+    case 'cesisn':
+      return <CesIsnChart />
     case 'linea':
       return <LineaChart />
     case 'funnel':

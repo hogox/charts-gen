@@ -1,5 +1,6 @@
 import type { ChartData, ChartType } from '@/types/charts'
 import { getDefaultData } from '@/lib/defaults'
+import { pointsToLinea } from '@/lib/linea'
 
 const LEGACY_KEY = 'gdg_state_v1'
 const TIPOS: ChartType[] = ['nps', 'ces', 'isn', 'linea', 'funnel', 'comp', 'anillo', 'barras', 'avance']
@@ -31,9 +32,10 @@ export function importLegacy(): ChartData | null {
       tipo: typeof s.tipo === 'string' && TIPOS.includes(s.tipo) ? s.tipo : d.tipo,
       titles: s.titles && typeof s.titles === 'object' ? { ...d.titles, ...s.titles } : d.titles,
       npsPoints: arr(s.npspers, d.npsPoints),
-      lineaPoints: arr(s.lineapers, d.lineaPoints),
+      ...(Array.isArray(s.lineapers) ? pointsToLinea(s.lineapers) : { lineaSeries: d.lineaSeries, lineaRows: d.lineaRows }),
       cesPoints: arr(s.cespers, d.cesPoints),
       isnPoints: arr(s.isnpers, d.isnPoints),
+      cesIsnPoints: d.cesIsnPoints,
       bars: arr(s.bars, d.bars),
       comps: arr(s.comps, d.comps),
       rings: arr(s.rings, d.rings),
@@ -74,6 +76,7 @@ export function importLegacy(): ChartData | null {
         metaLbl: str(inp['isn-mlbl'], d.isnConfig.metaLbl),
         showMeta: inp['isn-show-badge'] === undefined ? d.isnConfig.showMeta : !!inp['isn-show-badge'],
       },
+      cesIsnConfig: d.cesIsnConfig,
       funnelConfig: {
         insightTitle: str(inp['f-ititle'], d.funnelConfig.insightTitle),
         insightDesc: str(inp['f-idesc'], d.funnelConfig.insightDesc),

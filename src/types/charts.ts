@@ -2,6 +2,7 @@ export type ChartType =
   | 'nps'
   | 'ces'
   | 'isn'
+  | 'cesisn'
   | 'linea'
   | 'funnel'
   | 'comp'
@@ -14,6 +15,25 @@ export interface Point {
   l: string
   v: number
   n: number
+}
+
+/** Línea del gráfico "Líneas": nombre y color. */
+export interface LineSeries {
+  name: string
+  c: string
+}
+
+/** Periodo del gráfico "Líneas": un valor (v) y nº personas (n) por cada línea, en el mismo orden. */
+export interface LineRow {
+  l: string
+  vals: { v: number; n: number }[]
+}
+
+/** Punto del gráfico combinado CES + ISN. l=etiqueta, ces/isn=valor de cada métrica */
+export interface CesIsnPoint {
+  l: string
+  ces: number
+  isn: number
 }
 
 /** Barra (Barras). p = porcentaje 0-100 */
@@ -85,6 +105,11 @@ export interface IsnConfig {
   showMeta: boolean
 }
 
+export interface CesIsnConfig {
+  cesLbl: string
+  isnLbl: string
+}
+
 export interface FunnelConfig {
   insightTitle: string
   insightDesc: string
@@ -110,9 +135,11 @@ export interface ChartData {
   tipo: ChartType
   titles: Record<ChartType, string>
   npsPoints: Point[]
-  lineaPoints: Point[]
+  lineaSeries: LineSeries[]
+  lineaRows: LineRow[]
   cesPoints: Point[]
   isnPoints: Point[]
+  cesIsnPoints: CesIsnPoint[]
   bars: BarItem[]
   comps: CompSeg[]
   rings: CompSeg[]
@@ -122,6 +149,7 @@ export interface ChartData {
   lineaConfig: LineaConfig
   cesConfig: CesConfig
   isnConfig: IsnConfig
+  cesIsnConfig: CesIsnConfig
   funnelConfig: FunnelConfig
   barConfig: BarConfig
   avanceConfig: AvanceConfig

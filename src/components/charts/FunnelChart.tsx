@@ -1,6 +1,7 @@
 import { useChartStore } from '@/store/chartStore'
 import { funnelWidths, FUNNEL_NARROW } from '@/lib/funnel'
 import { ChartTitle, EmptyState } from './EmptyState'
+import { formatInt } from '@/lib/format'
 import { PersonIcon } from './primitives/PersonIcon'
 
 function Badge({ n, p }: { n: number; p: string }) {
@@ -9,7 +10,7 @@ function Badge({ n, p }: { n: number; p: string }) {
       className="inline-flex items-center whitespace-nowrap rounded border border-[#D6DFF0] bg-white px-1.5 py-0.5 text-[11px] font-semibold leading-[1.4] text-[#41464E]"
     >
       <PersonIcon />
-      {n} — {p}
+      {formatInt(n)} — {p}
     </span>
   )
 }
@@ -47,7 +48,7 @@ export function FunnelChart() {
             <div
               className="relative h-[34px] flex-1 overflow-visible"
               role="img"
-              aria-label={`${s.l}: ${s.n} — ${s.p}`}
+              aria-label={`${s.l}: ${formatInt(s.n)} — ${s.p}`}
             >
               <div
                 className="absolute left-0 top-0 h-full rounded-[5px] bg-[#EDF1F9]"

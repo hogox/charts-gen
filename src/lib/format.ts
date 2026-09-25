@@ -21,6 +21,32 @@ export function diffLine(metaStr: string, promStr: string): string | null {
   return 'En meta'
 }
 
+/** Entero con separador de miles es-CL (ej. 2.461). */
+export function formatInt(n: number): string {
+  return Math.round(n).toLocaleString('es-CL')
+}
+
+/** Número es-CL con coma decimal y hasta `maxDecimals` decimales (ej. 43,2). */
+export function formatNum(v: number, maxDecimals = 2): string {
+  return v.toLocaleString('es-CL', { maximumFractionDigits: maxDecimals })
+}
+
+/** Porcentaje es-CL (ej. 43,2%). */
+export function formatPct(v: number): string {
+  return `${formatNum(v)}%`
+}
+
+/**
+ * Normaliza lo que escribe el usuario a un string que `parseFloat` entiende.
+ * Enteros: descarta todo salvo dígitos y signo (así "2.461" → "2461").
+ * Decimales: si hay coma, los puntos son miles y la coma es el decimal.
+ */
+export function normalizeNumInput(raw: string, integer: boolean): string {
+  const s = raw.replace(/\s/g, '')
+  if (integer) return s.replace(/[^\d-]/g, '')
+  return s.includes(',') ? s.replace(/\./g, '').replace(',', '.') : s
+}
+
 /** Formato es-CL con N decimales fijos (para CES). */
 export function formatCL(v: number, decimals: number): string {
   return v.toLocaleString('es-CL', {

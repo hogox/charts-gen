@@ -18,7 +18,7 @@ export function AnilloChart() {
     <div>
       <ChartTitle title={title} className="!mb-0" />
       <div className="relative mx-auto" style={{ height: 248, maxWidth: 320 }} role="img" aria-label={`Anillo — ${barLabel}`}>
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 320, height: 248 }}>
           <PieChart>
             <Pie
               data={rings}

@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import type {
   AvSeg,
   BarItem,
+  CesIsnPoint,
   ChartData,
   ChartType,
   CompSeg,
@@ -12,28 +13,39 @@ import type {
 import { getDefaultData } from '@/lib/defaults'
 import { seriesColor } from '@/lib/colors'
 import { importLegacy } from '@/lib/migrate'
+import { pointsToLinea, type LineaData } from '@/lib/linea'
 
 const STORAGE_KEY = 'gdg-charts'
 
 /** Claves de arrays editables en el store. */
-type ListKey = 'npsPoints' | 'lineaPoints' | 'cesPoints' | 'isnPoints' | 'bars' | 'comps' | 'rings' | 'funs' | 'avs'
+type ListKey =
+  | 'npsPoints'
+  | 'cesPoints'
+  | 'isnPoints'
+  | 'cesIsnPoints'
+  | 'bars'
+  | 'comps'
+  | 'rings'
+  | 'funs'
+  | 'avs'
 /** Claves de objetos de configuración. */
 type ConfigKey =
   | 'npsConfig'
   | 'lineaConfig'
   | 'cesConfig'
   | 'isnConfig'
+  | 'cesIsnConfig'
   | 'funnelConfig'
   | 'barConfig'
   | 'avanceConfig'
   | 'anilloConfig'
 
 /** Item nuevo por defecto al agregar una fila (mirror de addPer/addCes/... del original). */
-const NEW_ROW: Record<ListKey, Point | BarItem | CompSeg | FunStep | AvSeg> = {
+const NEW_ROW: Record<ListKey, Point | CesIsnPoint | BarItem | CompSeg | FunStep | AvSeg> = {
   npsPoints: { l: 'Nuevo', v: 0, n: 0 },
-  lineaPoints: { l: 'Nuevo', v: 0, n: 0 },
   cesPoints: { l: 'Nuevo', v: 0, n: 0 },
   isnPoints: { l: 'Nuevo', v: 0, n: 0 },
+  cesIsnPoints: { l: 'Nuevo', ces: 0, isn: 0 },
   bars: { l: 'Nueva barra', p: 50 },
   comps: { l: 'Segmento', n: 100, c: seriesColor(0) },
   rings: { l: 'Segmento', n: 100, c: seriesColor(0) },
@@ -48,6 +60,7 @@ export interface ChartStore extends ChartData {
   addRow: (key: ListKey) => void
   removeRow: (key: ListKey, index: number) => void
   updateRow: (key: ListKey, index: number, patch: Record<string, string | number>) => void
+  setLinea: (fn: (d: LineaData) => LineaData) => void
   reset: () => void
 }
 
@@ -97,6 +110,8 @@ export const useChartStore = create<ChartStore>()(
             }) as Partial<ChartStore>,
         ),
 
+      setLinea: (fn) => set((s) => fn({ lineaSeries: s.lineaSeries, lineaRows: s.lineaRows })),
+
       reset: () => {
         set(getDefaultData())
         // mantiene los métodos (set reemplaza solo las claves dadas)
@@ -105,7 +120,7 @@ export const useChartStore = create<ChartStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 2,
+      version: 3,
       // v1 → v2: la "caja verde" del ISN pasó a ser la línea de meta (showBadge → showMeta).
       migrate: (persisted, version) => {
         const isn = (persisted as { isnConfig?: { showBadge?: boolean; showMeta?: boolean } })
@@ -114,13 +129,23 @@ export const useChartStore = create<ChartStore>()(
           isn.showMeta = isn.showBadge ?? true
           delete isn.showBadge
         }
+        // v2 → v3: "Línea simple" pasa a admitir varias líneas (lineaPoints → lineaSeries + lineaRows).
+        const old = persisted as { lineaPoints?: Point[] }
+        if (version < 3 && Array.isArray(old.lineaPoints)) {
+          const { lineaPoints, ...rest } = old
+          return { ...rest, ...pointsToLinea(lineaPoints) } as unknown as ChartStore
+        }
         return persisted as ChartStore
       },
       // Rellena claves faltantes con defaults (compatibilidad hacia adelante).
-      merge: (persisted, current) => ({
-        ...current,
-        ...(persisted as Partial<ChartStore>),
-      }),
+      merge: (persisted, current) => {
+        const p = persisted as Partial<ChartStore>
+        return {
+          ...current,
+          ...p,
+          titles: { ...current.titles, ...p?.titles },
+        }
+      },
     },
   ),
 )

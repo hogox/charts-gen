@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatInt, formatNum, normalizeNumInput } from '@/lib/format'
 
 /** Sección colapsable con título, descripción opcional y divisor superior. */
 export function Section({
@@ -59,38 +60,56 @@ const inputBase =
   'border border-[#DCDDE3] rounded-md bg-white text-[#060B25] outline-none transition-colors ' +
   'hover:border-[#C0BCC9] focus-visible:border-[#6D28D9] focus-visible:shadow-[0_0_0_2px_var(--brand-accent2),0_0_0_4px_rgba(109,40,217,.2)] w-full'
 
-/** Input de texto/numero compacto (.prow-input / .list-row-input). */
-export function CellInput({
-  value,
-  onChange,
-  type = 'text',
-  size = 'sm',
-  step,
-  min,
-  max,
-  placeholder,
-  ariaLabel,
-}: {
+type CellInputProps = {
   value: string | number
   onChange: (v: string) => void
   type?: 'text' | 'number'
+  /** Solo para type="number": descarta decimales y trata los puntos como separador de miles. */
+  integer?: boolean
   size?: 'sm' | 'xs'
-  step?: number
-  min?: number
-  max?: number
   placeholder?: string
   ariaLabel?: string
-}) {
+}
+
+/** Input de texto/numero compacto (.prow-input / .list-row-input). */
+export function CellInput({ type = 'text', ...props }: CellInputProps) {
+  if (type === 'number') return <NumberCellInput {...props} />
+  const { value, onChange, size = 'sm', placeholder, ariaLabel } = props
   return (
     <input
-      type={type}
+      type="text"
       value={value}
-      step={step}
-      min={min}
-      max={max}
       placeholder={placeholder}
       aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value)}
+      className={cn(inputBase, size === 'sm' ? 'px-3 py-[9px] text-xs' : 'px-2 py-[7px] text-[11px]')}
+    />
+  )
+}
+
+/**
+ * Input numérico que acepta coma decimal (43,2) y separador de miles.
+ * Mientras tiene foco muestra lo que el usuario escribe; al enfocarlo con valor 0 queda vacío.
+ * Emite un string normalizado para `parseFloat` / `parseInt`.
+ */
+function NumberCellInput({ value, onChange, integer = false, size = 'sm', placeholder, ariaLabel }: Omit<CellInputProps, 'type'>) {
+  const [draft, setDraft] = useState<string | null>(null)
+  const num = Number(value) || 0
+  const display = integer ? formatInt(num) : formatNum(num, 4)
+
+  return (
+    <input
+      type="text"
+      inputMode={integer ? 'numeric' : 'decimal'}
+      value={draft ?? display}
+      placeholder={placeholder ?? '0'}
+      aria-label={ariaLabel}
+      onFocus={() => setDraft(num === 0 ? '' : integer ? String(num) : String(num).replace('.', ','))}
+      onBlur={() => setDraft(null)}
+      onChange={(e) => {
+        setDraft(e.target.value)
+        onChange(normalizeNumInput(e.target.value, integer))
+      }}
       className={cn(inputBase, size === 'sm' ? 'px-3 py-[9px] text-xs' : 'px-2 py-[7px] text-[11px]')}
     />
   )

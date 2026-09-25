@@ -5,9 +5,11 @@ import type { ChartType } from '@/types/charts'
 import { TitleEditor } from '@/components/editors/TitleEditor'
 import { KpiEditor } from '@/components/editors/KpiEditor'
 import { PointsEditor } from '@/components/editors/PointsEditor'
+import { LineaEditor } from '@/components/editors/LineaEditor'
 import { DistributionEditor } from '@/components/editors/DistributionEditor'
 import { CesEditor } from '@/components/editors/CesEditor'
 import { IsnEditor } from '@/components/editors/IsnEditor'
+import { CesIsnEditor } from '@/components/editors/CesIsnEditor'
 import { CompEditor } from '@/components/editors/CompEditor'
 import { AnilloEditor } from '@/components/editors/AnilloEditor'
 import { BarEditor } from '@/components/editors/BarEditor'
@@ -21,7 +23,7 @@ function Editors({ tipo }: { tipo: ChartType }) {
         <>
           <KpiEditor />
           <TitleEditor />
-          <PointsEditor variant="nps" />
+          <PointsEditor />
           <DistributionEditor />
         </>
       )
@@ -29,7 +31,7 @@ function Editors({ tipo }: { tipo: ChartType }) {
       return (
         <>
           <TitleEditor />
-          <PointsEditor variant="linea" />
+          <LineaEditor />
         </>
       )
     case 'ces':
@@ -44,6 +46,13 @@ function Editors({ tipo }: { tipo: ChartType }) {
         <>
           <TitleEditor />
           <IsnEditor />
+        </>
+      )
+    case 'cesisn':
+      return (
+        <>
+          <TitleEditor />
+          <CesIsnEditor />
         </>
       )
     case 'comp':

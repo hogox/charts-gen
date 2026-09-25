@@ -1,5 +1,6 @@
 import { useChartStore } from '@/store/chartStore'
 import { ticksRange } from '@/lib/scale'
+import { formatPct } from '@/lib/format'
 import { ChartTitle } from './EmptyState'
 import { LineChartBase } from './LineChartBase'
 
@@ -23,7 +24,7 @@ export function IsnChart() {
         lineStroke="#0063FF"
         dotColors={vals.map(() => '#0063FF')}
         cardWidth={52}
-        valueFormatter={(v) => `${v}%`}
+        valueFormatter={formatPct}
         yDomain={[yMin, yMax]}
         yTicks={ticksRange(yMin, yMax, 10)}
         yTickFormatter={(v) => `${v}`}
