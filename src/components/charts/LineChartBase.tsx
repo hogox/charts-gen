@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import { ChartContainer, type ChartConfig } from '@/components/ui/chart'
 import type { Point } from '@/types/charts'
+import { formatPct } from '@/lib/format'
 import { ValueCard } from './primitives/ValueCard'
 
 const CHART_CONFIG = { v: { label: 'Valor', color: '#0063FF' } } satisfies ChartConfig
@@ -54,7 +55,7 @@ export function LineChartBase({
   showMeta,
   meta,
   metaLbl,
-  metaFormatter = (v) => `${v}%`,
+  metaFormatter = formatPct,
   showZeroLine,
   rightMargin = 20,
   lineGradientStops,
@@ -156,16 +157,20 @@ export function LineChartBase({
           <LabelList
             dataKey="v"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            content={(props: any) => (
-              <ValueCard
-                x={typeof props.x === 'number' ? props.x : Number(props.x)}
-                y={typeof props.y === 'number' ? props.y : Number(props.y)}
-                index={props.index}
-                points={points}
-                cardWidth={cardWidth}
-                valueFormatter={valueFormatter}
-              />
-            )}
+            content={(props: any) => {
+              const p = points[props.index]
+              if (!p) return null
+              return (
+                <ValueCard
+                  x={Number(props.x)}
+                  y={Number(props.y)}
+                  v={p.v}
+                  n={p.n}
+                  minWidth={cardWidth}
+                  valueFormatter={valueFormatter}
+                />
+              )
+            }}
           />
         </Line>
       </ComposedChart>

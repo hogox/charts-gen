@@ -21,13 +21,12 @@ export function CesEditor() {
             <CellInput value={p.l} ariaLabel={`Nombre periodo ${i + 1}`} onChange={(v) => updateRow('cesPoints', i, { l: v })} />
             <CellInput
               type="number"
-              step={0.01}
               value={p.v}
               ariaLabel={`Valor CES periodo ${i + 1}`}
               onChange={(v) => updateRow('cesPoints', i, { v: parseFloat(v) || 0 })}
             />
             <CellInput
-              type="number"
+              type="number" integer
               value={p.n}
               ariaLabel={`n periodo ${i + 1}`}
               onChange={(v) => updateRow('cesPoints', i, { n: parseInt(v) || 0 })}
@@ -42,7 +41,6 @@ export function CesEditor() {
         <Field label="Meta (valor)">
           <CellInput
             type="number"
-            step={0.01}
             value={config.meta}
             onChange={(v) => updateConfig('cesConfig', { meta: parseFloat(v) || 0 })}
           />

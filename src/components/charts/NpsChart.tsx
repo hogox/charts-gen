@@ -1,6 +1,6 @@
 import { useChartStore } from '@/store/chartStore'
 import { ticksRange } from '@/lib/scale'
-import { diffLine, parseNum } from '@/lib/format'
+import { diffLine, formatPct, parseNum } from '@/lib/format'
 import type { NpsConfig } from '@/types/charts'
 import { ChartTitle } from './EmptyState'
 import { LineChartBase } from './LineChartBase'
@@ -97,7 +97,7 @@ export function NpsChart() {
         lineStroke="#0063FF"
         dotColors={vals.map(() => '#0063FF')}
         cardWidth={46}
-        valueFormatter={(v) => `${v}%`}
+        valueFormatter={formatPct}
         yDomain={[yMin, yMax]}
         yTicks={ticksRange(yMin, yMax, 10)}
         yTickFormatter={(v) => `${v}%`}

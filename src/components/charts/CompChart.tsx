@@ -1,4 +1,5 @@
 import { useChartStore } from '@/store/chartStore'
+import { formatInt } from '@/lib/format'
 import { ChartTitle, EmptyState } from './EmptyState'
 
 /** Barra de composición apilada (rComp). */
@@ -21,8 +22,8 @@ export function CompChart() {
               className="flex min-w-[36px] flex-col items-start justify-center px-[9px]"
               style={{ width: `${pct}%`, background: s.c }}
             >
-              <div className="text-xs font-bold text-white">{s.n}</div>
-              <div className="text-[9px] text-white/75">{pct}%</div>
+              <div className="text-xs font-bold text-white">{formatInt(s.n)}</div>
+              <div className="text-[9px] text-white/75">{pct.replace('.', ',')}%</div>
             </div>
           )
         })}

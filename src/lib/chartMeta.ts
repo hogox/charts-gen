@@ -1,6 +1,7 @@
 import {
   Activity,
   BarChart3,
+  ChartSpline,
   Donut,
   Filter,
   Gauge,
@@ -17,7 +18,8 @@ export const CHART_TYPES: { v: ChartType; label: string; Icon: LucideIcon }[] = 
   { v: 'nps', label: 'NPS línea', Icon: LineChart },
   { v: 'ces', label: 'CES', Icon: Activity },
   { v: 'isn', label: 'ISN', Icon: Gauge },
-  { v: 'linea', label: 'Línea simple', Icon: TrendingUp },
+  { v: 'cesisn', label: 'CES + ISN', Icon: ChartSpline },
+  { v: 'linea', label: 'Líneas', Icon: TrendingUp },
   { v: 'funnel', label: 'Funnel', Icon: Filter },
   { v: 'comp', label: 'Composición', Icon: PieChart },
   { v: 'anillo', label: 'Anillo', Icon: Donut },

@@ -7,6 +7,7 @@ export const DEFAULT_TITLES: Record<ChartType, string> = {
   linea: 'Evolución de la métrica',
   ces: 'Evolución CES',
   isn: 'Evolución ISN',
+  cesisn: 'Evolución CES e ISN',
   funnel: '',
   comp: '',
   anillo: '',
@@ -29,10 +30,11 @@ export function getDefaultData(): ChartData {
       { l: 'Enero', v: 44, n: 352 },
       { l: 'Febrero', v: 55, n: 365 },
     ],
-    lineaPoints: [
-      { l: 'Enero', v: 0, n: 0 },
-      { l: 'Febrero', v: 49, n: 295 },
-      { l: 'Marzo', v: 58, n: 2461 },
+    lineaSeries: [{ name: 'Línea 1', c: seriesColor(0) }],
+    lineaRows: [
+      { l: 'Enero', vals: [{ v: 0, n: 0 }] },
+      { l: 'Febrero', vals: [{ v: 49, n: 295 }] },
+      { l: 'Marzo', vals: [{ v: 58, n: 2461 }] },
     ],
     cesPoints: [
       { l: 'Q1 2025', v: 0, n: 0 },
@@ -43,6 +45,11 @@ export function getDefaultData(): ChartData {
       { l: 'Enero', v: 0, n: 0 },
       { l: 'Febrero', v: 49, n: 295 },
       { l: 'Marzo', v: 58, n: 2461 },
+    ],
+    cesIsnPoints: [
+      { l: 'Enero', ces: 2.3, isn: 45 },
+      { l: 'Febrero', ces: 2.1, isn: 49 },
+      { l: 'Marzo', ces: 2.05, isn: 58 },
     ],
     bars: [
       { l: 'Etapa 1', p: 94 },
@@ -107,6 +114,10 @@ export function getDefaultData(): ChartData {
       meta: 58,
       metaLbl: 'Meta ISN 2026',
       showMeta: true,
+    },
+    cesIsnConfig: {
+      cesLbl: 'CES',
+      isnLbl: 'ISN',
     },
     funnelConfig: {
       insightTitle: '72% de los usuarios no avanzan de la primera pantalla',

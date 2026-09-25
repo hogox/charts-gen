@@ -28,7 +28,7 @@ export function DistributionEditor() {
               {r.label}
             </div>
             <CellInput
-              type="number"
+              type="number" integer
               value={config[r.numKey] as number}
               ariaLabel={`Cantidad de ${r.label.toLowerCase()}`}
               onChange={(v) => set({ [r.numKey]: parseInt(v) || 0 } as Partial<NpsConfig>)}

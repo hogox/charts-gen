@@ -18,7 +18,7 @@ export function CompEditor() {
             <CellInput size="xs" value={s.l} ariaLabel={`Etiqueta segmento ${i + 1}`} onChange={(v) => updateRow('comps', i, { l: v })} />
             <CellInput
               size="xs"
-              type="number"
+              type="number" integer
               value={s.n}
               ariaLabel={`Cantidad segmento ${i + 1}`}
               onChange={(v) => updateRow('comps', i, { n: parseInt(v) || 0 })}

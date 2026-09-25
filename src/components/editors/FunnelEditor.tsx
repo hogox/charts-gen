@@ -34,7 +34,7 @@ export function FunnelEditor() {
             <CellInput size="xs" value={s.l} ariaLabel={`Etiqueta etapa ${i + 1}`} onChange={(v) => updateRow('funs', i, { l: v })} />
             <CellInput
               size="xs"
-              type="number"
+              type="number" integer
               value={s.n}
               ariaLabel={`n etapa ${i + 1}`}
               onChange={(v) => updateRow('funs', i, { n: parseInt(v) || 0 })}

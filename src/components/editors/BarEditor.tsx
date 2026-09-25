@@ -29,8 +29,6 @@ export function BarEditor() {
             <CellInput
               size="xs"
               type="number"
-              min={0}
-              max={100}
               value={b.p}
               ariaLabel={`Porcentaje barra ${i + 1}`}
               onChange={(v) => updateRow('bars', i, { p: parseFloat(v) || 0 })}

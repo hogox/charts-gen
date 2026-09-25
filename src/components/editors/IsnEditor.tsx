@@ -26,7 +26,7 @@ export function IsnEditor() {
               onChange={(v) => updateRow('isnPoints', i, { v: parseFloat(v) || 0 })}
             />
             <CellInput
-              type="number"
+              type="number" integer
               value={p.n}
               ariaLabel={`n periodo ${i + 1}`}
               onChange={(v) => updateRow('isnPoints', i, { n: parseInt(v) || 0 })}
